@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>戦国クロニクル：幸村伝</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -306,6 +306,21 @@ ruby rt{font-size:.55em;color:var(--gold)}
 <div id="notification"></div>
 </div>
 <script>
+/* ═══════════════════════════════════════
+   BALANCE CONSTANTS
+═══════════════════════════════════════ */
+var CRIMSON_ATK_MULTIPLIER   = 1.8;
+var CRIMSON_DEF_MULTIPLIER   = 0.8;
+var GUARD_DEF_MULTIPLIER     = 1.5;
+var WAR_BANNER_ATK_MULTIPLIER= 1.2;
+var DEF_REDUCTION_FACTOR     = 0.6;
+var DMG_MIN_VARIANCE         = 0.85;
+var DMG_VARIANCE_RANGE       = 0.30;
+var SOFT_PITY_THRESHOLD      = 40;
+var HARD_PITY_THRESHOLD      = 50;
+var SOFT_PITY_RATE           = 50;
+var BASE_FORT_DAMAGE         = 150;
+
 /* ═══════════════════════════════════════
    SECTION 1: DATA — ENEMIES
 ═══════════════════════════════════════ */

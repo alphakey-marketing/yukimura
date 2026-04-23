@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>戦国クロニクル：幸村伝</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0d0a08;--ink-mid:#1a1410;--ink-light:#2a2018;--parchment:#e8d5a3;--gold:#c4962a;--ember:#c8702a;--crimson:#8b1a1a;--crimson-bright:#cc2222;--muted:#7a6a50;--white:#f5f0e8}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--white);font-family:'Noto Sans JP',sans-serif}
+#app{position:relative;width:100%;height:100%;max-width:480px;margin:0 auto;overflow:hidden;background:var(--ink-mid)}
+ruby rt{font-size:.55em;color:var(--gold)}
+.screen{position:absolute;top:0;left:0;width:100%;height:calc(100% - 60px);display:none;flex-direction:column;overflow-y:auto}
+.screen.active{display:flex}
+#screen-title{position:absolute;top:0;left:0;width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,var(--ink) 0%,var(--ink-mid) 50%,var(--ink) 100%)}
+#screen-title.active{display:flex}
+.mon-crest{margin-bottom:24px}
+.mon-row{display:flex;gap:8px;margin-bottom:8px;justify-content:center}
+.coin{width:28px;height:28px;border-radius:50%;border:2px solid var(--gold);background:var(--ink-light);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--gold);font-family:'Noto Serif JP',serif}
+.title-logo{font-family:'Noto Serif JP',serif;font-size:13px;color:var(--muted);letter-spacing:.3em;margin-bottom:8px}
+.title-main{font-family:'Noto Serif JP',serif;font-size:30px;font-weight:700;color:var(--gold);letter-spacing:.1em;margin-bottom:4px}
+.title-sub{font-family:'Noto Serif JP',serif;font-size:16px;color:var(--white);margin-bottom:48px;letter-spacing:.2em}
+.title-btn{background:transparent;border:1px solid var(--gold);color:var(--gold);font-family:'Noto Serif JP',serif;font-size:17px;padding:12px 48px;margin:8px 0;cursor:pointer;letter-spacing:.2em;transition:background .2s,color .2s;min-width:220px}
+.title-btn:hover{background:var(--gold);color:var(--ink)}
+#story-panel{position:fixed;inset:0;z-index:100;background:rgba(13,10,8,.97);display:none;flex-direction:column;justify-content:center;padding:40px 28px;cursor:pointer}
+#story-panel.active{display:flex}
+.story-chapter-label{font-size:11px;color:var(--gold);letter-spacing:.3em;margin-bottom:20px;font-family:'Noto Sans JP',sans-serif}
+.story-speaker{font-family:'Noto Serif JP',serif;font-size:14px;color:var(--ember);margin-bottom:20px;padding:6px 14px;border-left:2px solid var(--ember);display:none}
+.story-text{font-family:'Noto Serif JP',serif;font-size:17px;line-height:2.1;color:var(--white);white-space:pre-line;flex:1}
+.story-hint{font-size:12px;color:var(--muted);text-align:center;margin-top:32px;animation:blink 1.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+#bottom-nav{position:fixed;bottom:0;height:60px;width:100%;max-width:480px;left:50%;transform:translateX(-50%);z-index:50;background:var(--ink);border-top:1px solid var(--ink-light);display:none;align-items:stretch}
+#bottom-nav.active{display:flex}
+.nav-btn{flex:1;background:transparent;border:none;color:var(--muted);font-family:'Noto Sans JP',sans-serif;font-size:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:color .2s;padding:4px 2px}
+.nav-btn .nav-icon{font-size:18px}
+.nav-btn.active{color:var(--gold)}
+.screen-header{padding:20px 16px 12px;border-bottom:1px solid var(--ink-light);background:var(--ink);flex-shrink:0}
+.screen-title{font-family:'Noto Serif JP',serif;font-size:18px;color:var(--gold)}
+.screen-subtitle{font-size:12px;color:var(--muted);margin-top:4px}
+.screen-content{flex:1;overflow-y:auto;padding:16px}
+.bar-container{width:100%;height:10px;background:var(--ink);border-radius:5px;overflow:hidden;margin:3px 0}
+.bar-hp{height:100%;background:linear-gradient(90deg,#8b1a1a,#cc2222);border-radius:5px;transition:width .3s}
+.bar-exp{height:100%;background:linear-gradient(90deg,var(--gold),#e8c44a);border-radius:5px;transition:width .3s}
+.bar-crimson{height:100%;background:linear-gradient(90deg,#4a0a0a,var(--crimson-bright));border-radius:5px;transition:width .3s}
+.bar-fort{height:100%;background:linear-gradient(90deg,#2a4a1a,#4a8a2a);border-radius:5px;transition:width .3s}
+.bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:2px}
+.player-portrait{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.portrait-circle{width:64px;height:64px;border-radius:50%;background:var(--ink-light);border:2px solid var(--crimson);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:28px;color:var(--crimson);flex-shrink:0}
+.player-info{flex:1}
+.player-name{font-family:'Noto Serif JP',serif;font-size:18px;color:var(--white)}
+.player-level{font-size:13px;color:var(--gold)}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}
+.stat-box{background:var(--ink);border:1px solid var(--ink-light);border-radius:6px;padding:10px 8px;text-align:center}
+.stat-label{font-size:10px;color:var(--muted);margin-bottom:4px}
+.stat-value{font-family:'Noto Serif JP',serif;font-size:20px;color:var(--white)}
+.equip-slots{margin:12px 0}
+.equip-slot{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--ink);border:1px solid var(--ink-light);border-radius:6px;margin-bottom:8px}
+.equip-slot-icon{width:32px;height:32px;background:var(--ink-light);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.equip-slot-info{flex:1}
+.equip-slot-type{font-size:10px;color:var(--muted)}
+.equip-slot-name{font-size:14px;color:var(--white)}
+.equip-slot-empty{font-size:13px;color:var(--muted);font-style:italic}
+.btn-primary{background:var(--crimson);border:none;color:var(--white);font-family:'Noto Sans JP',sans-serif;font-size:15px;padding:12px 24px;border-radius:4px;cursor:pointer;width:100%;margin:8px 0;transition:background .2s}
+.btn-primary:hover:not(:disabled){background:var(--crimson-bright)}
+.btn-primary:disabled{background:var(--ink-light);color:var(--muted);cursor:not-allowed}
+.btn-gold{background:var(--gold);border:none;color:var(--ink);font-family:'Noto Sans JP',sans-serif;font-size:15px;padding:12px 24px;border-radius:4px;cursor:pointer;width:100%;margin:8px 0;font-weight:700;transition:opacity .2s}
+.btn-gold:hover{opacity:.85}
+.btn-secondary{background:transparent;border:1px solid var(--muted);color:var(--muted);font-family:'Noto Sans JP',sans-serif;font-size:13px;padding:8px 16px;border-radius:4px;cursor:pointer;transition:border-color .2s,color .2s}
+.btn-secondary:hover{border-color:var(--white);color:var(--white)}
+.book-header{font-family:'Noto Serif JP',serif;font-size:13px;color:var(--gold);letter-spacing:.2em;padding:12px 0 8px;border-bottom:1px solid var(--ink-light);margin-bottom:12px}
+.chapter-card{background:var(--ink);border:1px solid var(--ink-light);border-radius:6px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:border-color .2s;display:flex;align-items:center;gap:12px}
+.chapter-card.current{border-color:var(--gold)}
+.chapter-card.completed{opacity:.7}
+.chapter-card.locked{opacity:.4;cursor:not-allowed}
+.chapter-num{font-family:'Noto Serif JP',serif;font-size:22px;color:var(--muted);width:32px;flex-shrink:0}
+.chapter-card.current .chapter-num{color:var(--gold)}
+.chapter-info{flex:1}
+.chapter-title{font-family:'Noto Serif JP',serif;font-size:15px;color:var(--white)}
+.chapter-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.chapter-status{font-size:18px}
+.party-row{display:flex;gap:8px;margin-bottom:20px;padding:12px;background:var(--ink);border-radius:8px;overflow-x:auto}
+.party-slot{flex:0 0 64px;height:72px;border:1px dashed var(--ink-light);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:border-color .2s;padding:4px;gap:3px}
+.party-slot.filled{border-color:var(--gold);border-style:solid}
+.party-slot .slot-portrait{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-family:'Noto Serif JP',serif}
+.party-slot .slot-name{font-size:8px;color:var(--white);text-align:center;line-height:1.2}
+.party-slot .slot-empty-text{font-size:9px;color:var(--muted)}
+.companion-list{display:flex;flex-direction:column;gap:8px}
+.companion-card{background:var(--ink);border:1px solid var(--ink-light);border-radius:6px;padding:12px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:border-color .2s}
+.companion-card:hover{border-color:var(--gold)}
+.companion-card.in-party{border-color:var(--gold);background:var(--ink-light)}
+.comp-portrait{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:16px;flex-shrink:0}
+.comp-info{flex:1}
+.comp-name{font-family:'Noto Serif JP',serif;font-size:15px;color:var(--white)}
+.comp-class{font-size:11px;color:var(--muted);margin-top:2px}
+.comp-stars{color:var(--gold);font-size:11px}
+.comp-passive{font-size:10px;color:var(--ember);margin-top:2px}
+.filter-row{display:flex;gap:8px;margin-bottom:16px}
+.filter-btn{background:transparent;border:1px solid var(--ink-light);color:var(--muted);font-family:'Noto Sans JP',sans-serif;font-size:12px;padding:6px 12px;border-radius:4px;cursor:pointer;transition:all .2s}
+.filter-btn.active{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+.inventory-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.item-card{background:var(--ink);border:1px solid var(--ink-light);border-radius:6px;padding:10px;cursor:pointer;transition:border-color .2s}
+.item-card:hover{border-color:var(--gold)}
+.item-name{font-family:'Noto Serif JP',serif;font-size:13px;color:var(--white);margin-bottom:4px}
+.item-rarity{font-size:11px;color:var(--gold);margin-bottom:4px}
+.item-bonus{font-size:11px;color:var(--muted)}
+.empty-msg{color:var(--muted);text-align:center;font-size:14px;padding:32px 0}
+.shrine-balance{text-align:center;padding:16px}
+.koku-amount{font-family:'Noto Serif JP',serif;font-size:36px;color:var(--gold)}
+.koku-label{font-size:12px;color:var(--muted);margin-top:4px}
+.torii-gate{font-size:72px;text-align:center;margin:16px 0;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.pity-info{text-align:center;font-size:12px;color:var(--muted);margin-top:8px}
+.shrine-btns{padding:0 24px}
+#screen-battle{background:var(--ink)}
+#screen-battle.crimson-active{animation:crimsonPulse .8s ease-in-out infinite alternate}
+@keyframes crimsonPulse{from{box-shadow:inset 0 0 30px rgba(139,26,26,.2)}to{box-shadow:inset 0 0 60px rgba(204,34,34,.4)}}
+.battle-enemy-section{padding:14px 16px;background:var(--ink-mid);border-bottom:1px solid var(--ink-light);flex-shrink:0}
+.enemy-name{font-family:'Noto Serif JP',serif;font-size:16px;color:var(--ember);margin-bottom:6px}
+.battle-player-section{padding:10px 16px;background:var(--ink);border-top:1px solid var(--ink-light);flex-shrink:0}
+.battle-log{flex:1;overflow-y:auto;padding:10px 16px;font-size:13px;line-height:1.9;color:var(--white);background:var(--ink-mid)}
+.log-entry{margin-bottom:2px}
+.log-player{color:#88aaff}
+.log-enemy{color:#ffaa88}
+.log-system{color:var(--gold)}
+.log-crimson{color:var(--crimson-bright)}
+.log-heal{color:#88ff88}
+.battle-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 16px;background:var(--ink);flex-shrink:0}
+.battle-btn{background:var(--ink-light);border:1px solid var(--muted);color:var(--white);font-family:'Noto Sans JP',sans-serif;font-size:13px;padding:13px 6px;border-radius:6px;cursor:pointer;transition:all .2s}
+.battle-btn:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}
+.battle-btn:disabled{opacity:.4;cursor:not-allowed}
+.crimson-meter-section{padding:5px 16px;background:var(--ink);flex-shrink:0}
+.crimson-label{font-size:10px;color:var(--crimson-bright);margin-bottom:3px}
+.wave-info{text-align:center;font-size:13px;color:var(--gold);padding:6px;background:var(--ink-mid);flex-shrink:0}
+.fort-hp-section{padding:14px 16px;background:var(--ink-mid);border-bottom:1px solid var(--ink-light);flex-shrink:0}
+.fort-title{font-family:'Noto Serif JP',serif;font-size:17px;color:var(--gold);margin-bottom:8px}
+.fort-line{background:var(--ink);border:1px solid var(--ink-light);border-radius:6px;padding:12px;margin-bottom:8px}
+.fort-line-header{font-size:12px;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
+.fort-slots{display:flex;gap:8px}
+.fort-slot{flex:1;min-height:56px;border:1px dashed var(--ink-light);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:var(--muted);transition:border-color .2s;padding:4px}
+.fort-slot.filled{border-color:var(--gold);border-style:solid}
+.fort-slot .slot-char{font-size:15px;font-family:'Noto Serif JP',serif;color:var(--white)}
+.fort-slot .slot-name{font-size:9px;color:var(--white);text-align:center}
+.fort-wave-log{flex:1;overflow-y:auto;padding:10px 16px;font-size:13px;line-height:1.9;color:var(--white);background:var(--ink-mid)}
+#screen-ending{position:fixed;inset:0;z-index:200;background:var(--ink);display:none;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;overflow-y:auto}
+#screen-ending.active{display:flex}
+.ending-title{font-family:'Noto Serif JP',serif;font-size:16px;color:var(--gold);letter-spacing:.3em;margin-bottom:32px}
+.ending-prose{font-family:'Noto Serif JP',serif;font-size:16px;line-height:2.3;color:var(--white);white-space:pre-line;max-width:380px;text-align:left;margin-bottom:40px}
+.chronicle-entry{background:var(--ink);border:1px solid var(--ink-light);border-radius:6px;padding:16px;margin-bottom:12px}
+.chronicle-chapter{font-family:'Noto Serif JP',serif;font-size:15px;color:var(--gold);margin-bottom:12px;border-bottom:1px solid var(--ink-light);padding-bottom:8px}
+.chronicle-col{margin-bottom:10px}
+.chronicle-col-label{font-size:11px;color:var(--ember);margin-bottom:4px;letter-spacing:.1em}
+.chronicle-col-text{font-size:13px;color:var(--white);line-height:1.7}
+#overlay-gacha{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.96);display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+#overlay-gacha.active{display:flex}
+.gacha-result-title{font-family:'Noto Serif JP',serif;font-size:18px;color:var(--gold);margin-bottom:24px;letter-spacing:.2em}
+.gacha-cards{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;max-width:440px;margin-bottom:24px}
+.gacha-card{width:76px;display:flex;flex-direction:column;align-items:center;gap:6px;animation:cardReveal .4s ease-out both}
+@keyframes cardReveal{from{opacity:0;transform:scale(.5) rotate(-10deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+.gacha-portrait{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:20px;border:2px solid currentColor}
+.gacha-card-name{font-family:'Noto Serif JP',serif;font-size:10px;color:var(--white);text-align:center;line-height:1.3}
+.gacha-card-stars{font-size:10px}
+.rarity-5{color:var(--gold);background:rgba(196,150,42,.2)}
+.rarity-4{color:#c080ff;background:rgba(192,128,255,.2)}
+.rarity-3{color:#6080ff;background:rgba(96,128,255,.2)}
+.rarity-2{color:#40c080;background:rgba(64,192,128,.2)}
+.rarity-1{color:var(--muted);background:rgba(122,106,80,.2)}
+#overlay-modal{position:fixed;inset:0;z-index:160;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:24px}
+#overlay-modal.active{display:flex}
+.modal-box{background:var(--ink-mid);border:1px solid var(--gold);border-radius:8px;padding:24px;width:100%;max-width:320px}
+.modal-title{font-family:'Noto Serif JP',serif;font-size:18px;color:var(--gold);margin-bottom:6px}
+.modal-stars{color:var(--gold);font-size:14px;margin-bottom:10px}
+.modal-bonus{font-size:14px;color:var(--white);margin-bottom:20px;padding:8px;background:var(--ink);border-radius:4px}
+.modal-actions{display:flex;flex-direction:column;gap:8px}
+#notification{position:fixed;top:-60px;left:50%;transform:translateX(-50%);z-index:300;background:var(--ink-light);border:1px solid var(--gold);color:var(--gold);font-family:'Noto Sans JP',sans-serif;font-size:13px;padding:10px 20px;border-radius:6px;transition:top .3s ease;white-space:nowrap;max-width:90%;text-align:center}
+#notification.show{top:12px}
+.divider{height:1px;background:var(--ink-light);margin:14px 0}
+.section-label{font-size:11px;color:var(--muted);letter-spacing:.2em;margin-bottom:8px;text-transform:uppercase}
+.money-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
+.money-label{font-size:13px;color:var(--muted)}
+.money-value{font-family:'Noto Serif JP',serif;font-size:16px;color:var(--gold)}
+.gameover-overlay{position:fixed;inset:0;z-index:180;background:rgba(0,0,0,.92);display:none;flex-direction:column;align-items:center;justify-content:center;padding:32px}
+.gameover-overlay.active{display:flex}
+.gameover-title{font-family:'Noto Serif JP',serif;font-size:28px;color:var(--crimson-bright);margin-bottom:16px}
+.gameover-msg{font-size:14px;color:var(--muted);margin-bottom:32px;text-align:center;line-height:1.8}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:var(--ink)}
+::-webkit-scrollbar-thumb{background:var(--ink-light);border-radius:2px}
+</style>
+</head>
+<body>
+<div id="app">
+<!-- TITLE SCREEN -->
+<div id="screen-title" class="active">
+  <div class="mon-crest">
+    <div class="mon-row"><div class="coin">文</div><div class="coin">文</div><div class="coin">文</div></div>
+    <div class="mon-row"><div class="coin">文</div><div class="coin">文</div><div class="coin">文</div></div>
+  </div>
+  <div class="title-logo">戦国クロニクル</div>
+  <div class="title-main">幸<ruby>村<rt>むら</rt></ruby>伝</div>
+  <div class="title-sub">真田信繁の物語</div>
+  <button class="title-btn" onclick="startNewGame()">はじめる</button>
+  <button class="title-btn" id="btn-continue" style="display:none" onclick="continueGame()">つづきから</button>
+</div>
+<!-- STORY PANEL -->
+<div id="story-panel">
+  <div id="story-chapter-label" class="story-chapter-label"></div>
+  <div id="story-speaker" class="story-speaker"></div>
+  <div id="story-text" class="story-text"></div>
+  <div class="story-hint">── タップして続ける ──</div>
+</div>
+<!-- DOJO SCREEN -->
+<div id="screen-dojo" class="screen">
+  <div class="screen-header"><div class="screen-title">⛩ 道場</div></div>
+  <div class="screen-content" id="dojo-content"></div>
+</div>
+<!-- MAP SCREEN -->
+<div id="screen-map" class="screen">
+  <div class="screen-header">
+    <div class="screen-title">⚔ 出陣</div>
+    <div class="screen-subtitle">章を選んで出陣せよ</div>
+  </div>
+  <div class="screen-content" id="map-content"></div>
+</div>
+<!-- COUNCIL SCREEN -->
+<div id="screen-council" class="screen">
+  <div class="screen-header">
+    <div class="screen-title">👥 軍議</div>
+    <div class="screen-subtitle">出陣メンバーを選べ（最大5名）</div>
+  </div>
+  <div class="screen-content" id="council-content"></div>
+</div>
+<!-- ARMORY SCREEN -->
+<div id="screen-armory" class="screen">
+  <div class="screen-header"><div class="screen-title">🗡 武具</div></div>
+  <div class="screen-content" id="armory-content"></div>
+</div>
+<!-- SHRINE SCREEN -->
+<div id="screen-shrine" class="screen">
+  <div class="screen-header">
+    <div class="screen-title">🎴 招魂</div>
+    <div class="screen-subtitle">石（こく）を使って仲間を召喚する</div>
+  </div>
+  <div class="screen-content" id="shrine-content"></div>
+</div>
+<!-- BATTLE SCREEN -->
+<div id="screen-battle" class="screen">
+  <div id="battle-enemy-section" class="battle-enemy-section"></div>
+  <div id="battle-wave-info" class="wave-info" style="display:none"></div>
+  <div id="battle-log" class="battle-log"></div>
+  <div class="crimson-meter-section">
+    <div class="crimson-label">赤備えメーター</div>
+    <div class="bar-container"><div class="bar-crimson" id="bar-crimson" style="width:0%"></div></div>
+  </div>
+  <div id="battle-player-section" class="battle-player-section"></div>
+  <div id="battle-actions" class="battle-actions"></div>
+</div>
+<!-- FORT SCREEN -->
+<div id="screen-fort" class="screen">
+  <div class="screen-header"><div class="screen-title">🏯 真田丸</div></div>
+  <div class="screen-content" id="fort-content"></div>
+</div>
+<!-- ENDING SCREEN -->
+<div id="screen-ending">
+  <div class="ending-title">── 終 ──</div>
+  <div class="ending-prose" id="ending-text"></div>
+  <button class="btn-gold" onclick="unlockChronicle()" style="max-width:280px">📜 記録を解放する</button>
+</div>
+<!-- CHRONICLE SCREEN -->
+<div id="screen-chronicle" class="screen">
+  <div class="screen-header">
+    <div class="screen-title">📜 記録</div>
+    <div class="screen-subtitle">物語の中で／歴史の記録</div>
+  </div>
+  <div class="screen-content" id="chronicle-content"></div>
+</div>
+<!-- NAV -->
+<nav id="bottom-nav">
+  <button class="nav-btn" data-screen="dojo" onclick="showScreen('dojo')"><span class="nav-icon">⛩</span>道場</button>
+  <button class="nav-btn" data-screen="map" onclick="showScreen('map')"><span class="nav-icon">⚔</span>出陣</button>
+  <button class="nav-btn" data-screen="council" onclick="showScreen('council')"><span class="nav-icon">👥</span>軍議</button>
+  <button class="nav-btn" data-screen="armory" onclick="showScreen('armory')"><span class="nav-icon">🗡</span>武具</button>
+  <button class="nav-btn" data-screen="shrine" onclick="showScreen('shrine')"><span class="nav-icon">🎴</span>招魂</button>
+  <button class="nav-btn" id="nav-chronicle" data-screen="chronicle" onclick="showScreen('chronicle')" style="display:none"><span class="nav-icon">📜</span>記録</button>
+</nav>
+<!-- GACHA OVERLAY -->
+<div id="overlay-gacha">
+  <div class="gacha-result-title">召喚結果</div>
+  <div class="gacha-cards" id="gacha-cards"></div>
+  <button class="btn-gold" onclick="closeGachaOverlay()" style="max-width:240px">閉じる</button>
+</div>
+<!-- ITEM MODAL -->
+<div id="overlay-modal">
+  <div class="modal-box" id="modal-content"></div>
+</div>
+<!-- GAME OVER -->
+<div id="gameover-overlay" class="gameover-overlay">
+  <div class="gameover-title">敗 北</div>
+  <div class="gameover-msg" id="gameover-msg"></div>
+  <button class="btn-primary" onclick="retryBattle()" style="max-width:240px">もう一度</button>
+  <button class="btn-secondary" onclick="retreatToMap()" style="margin-top:8px">引き下がる</button>
+</div>
+<!-- NOTIFICATION -->
+<div id="notification"></div>
+</div>
+<script>
+/* ═══════════════════════════════════════
+   SECTION 1: DATA — ENEMIES
+═══════════════════════════════════════ */
+var ENEMIES = {
+  ch1_nobuyuki:{key:'ch1_nobuyuki',name:'真田信之（稽古）',maxHp:35,atk:9,def:5,spd:10,exp:60,mon:20,koku:0},
+  ch2_oda_scout:{key:'ch2_oda_scout',name:'織田の間者',maxHp:60,atk:14,def:8,spd:11,exp:100,mon:35,koku:3},
+  ch3_sparring:{key:'ch3_sparring',name:'上杉の稽古相手',maxHp:80,atk:17,def:10,spd:13,exp:130,mon:45,koku:5},
+  ch4_rival:{key:'ch4_rival',name:'豊臣家の競合者',maxHp:110,atk:22,def:14,spd:14,exp:160,mon:65,koku:8},
+  ch5_ueda_wave:{key:'ch5_ueda_wave',name:'徳川の先鋒隊',maxHp:90,atk:25,def:16,spd:14,expPerWave:80,expBonus:120,mon:40,koku:5,waves:3},
+  ch6_sekigahara:{key:'ch6_sekigahara',name:'東軍の将',maxHp:160,atk:32,def:22,spd:16,exp:300,mon:120,koku:15},
+  ch7_bandit:{key:'ch7_bandit',name:'山の野盗',maxHp:140,atk:28,def:18,spd:15,exp:180,mon:50,koku:5},
+  ch8_checkpoint:{key:'ch8_checkpoint',name:'徳川の関所番',maxHp:200,atk:38,def:28,spd:18,exp:350,mon:160,koku:20},
+  ch9_fort:{key:'ch9_fort',name:'徳川の突撃隊長',maxHp:280,atk:48,def:35,spd:20,exp:450,mon:180,koku:30},
+  ch10_final_wave:{key:'ch10_final_wave',name:'徳川の精鋭',maxHp:150,atk:55,def:40,spd:22,expPerWave:200,expBonus:300,mon:100,koku:15,waves:5}
+};
+
+/* ═══════════════════════════════════════
+   SECTION 2: DATA — EQUIPMENT
+═══════════════════════════════════════ */
+var EQUIPMENT = [
+  {id:'bokken',name:'木刀',type:'weapon',rarity:1,bonus:{atk:3}},
+  {id:'wakizashi',name:'脇差',type:'weapon',rarity:2,bonus:{atk:6}},
+  {id:'katana',name:'刀',type:'weapon',rarity:3,bonus:{atk:10}},
+  {id:'red_spear',name:'赤備えの槍',type:'weapon',rarity:4,bonus:{atk:16}},
+  {id:'yari_yukimura',name:'幸村の槍',type:'weapon',rarity:5,bonus:{atk:25}},
+  {id:'cloth_armor',name:'布の鎧',type:'armor',rarity:1,bonus:{def:2}},
+  {id:'light_armor',name:'軽鎧',type:'armor',rarity:2,bonus:{def:5}},
+  {id:'domain_armor',name:'領地の鎧',type:'armor',rarity:3,bonus:{def:8}},
+  {id:'red_armor',name:'赤備えの鎧',type:'armor',rarity:4,bonus:{def:13}},
+  {id:'crimson_master',name:'赤備えの大将鎧',type:'armor',rarity:5,bonus:{def:20}},
+  {id:'talisman',name:'お守り',type:'accessory',rarity:1,bonus:{hp:10}},
+  {id:'swift_sandal',name:'足軽の草鞋',type:'accessory',rarity:2,bonus:{spd:4}},
+  {id:'iron_will',name:'鉄の意志',type:'accessory',rarity:3,bonus:{def:5}},
+  {id:'bamboo_charm',name:'竹の御守り',type:'accessory',rarity:4,bonus:{hp:30,def:5}},
+  {id:'last_coin',name:'六文銭（最後の一枚）',type:'accessory',rarity:5,bonus:{hp:50,atk:5}}
+];
+var LOOT_POOLS = {
+  1:['bokken','cloth_armor','talisman'],
+  2:['bokken','wakizashi','cloth_armor','light_armor','talisman'],
+  3:['wakizashi','light_armor','swift_sandal','iron_will'],
+  4:['katana','domain_armor','iron_will'],
+  5:['katana','red_spear','domain_armor','red_armor','bamboo_charm'],
+  6:['red_spear','red_armor','bamboo_charm'],
+  7:['red_spear','red_armor','bamboo_charm'],
+  8:['red_armor','crimson_master','bamboo_charm','last_coin'],
+  9:['crimson_master','last_coin'],
+  10:['yari_yukimura','crimson_master','last_coin']
+};
+
+/* ═══════════════════════════════════════
+   SECTION 3: DATA — COMPANIONS
+═══════════════════════════════════════ */
+var COMPANION_DATA = {
+  saizo:{id:'saizo',name:'霧隠才蔵',shortName:'才蔵',cls:'Ninja',rarity:4,atk:22,def:16,spd:32,passive:'shadow_step',assistDmg:7},
+  chikurin:{id:'chikurin',name:'竹林院',shortName:'竹林',cls:'Shrine Maiden',rarity:4,atk:14,def:18,spd:16,passive:'healing',assistDmg:4},
+  masayuki:{id:'masayuki',name:'真田昌幸',shortName:'昌幸',cls:'Tactician',rarity:5,atk:20,def:22,spd:18,passive:'bamboo_bend',assistDmg:6},
+  nobuyuki:{id:'nobuyuki',name:'真田信之',shortName:'信之',cls:'Samurai',rarity:4,atk:26,def:24,spd:16,passive:null,assistDmg:20},
+  masamune:{id:'masamune',name:'伊達政宗',shortName:'政宗',cls:'Samurai',rarity:5,atk:32,def:28,spd:18,passive:null,assistDmg:26},
+  mitsunari:{id:'mitsunari',name:'石田三成',shortName:'三成',cls:'Tactician',rarity:5,atk:24,def:20,spd:17,passive:'war_banner',assistDmg:7},
+  yoshitsugu:{id:'yoshitsugu',name:'大谷吉継',shortName:'吉継',cls:'Shrine Maiden',rarity:4,atk:18,def:26,spd:16,passive:'ward',assistDmg:5},
+  matabei:{id:'matabei',name:'後藤又兵衛',shortName:'又兵衛',cls:'Samurai',rarity:3,atk:24,def:18,spd:17,passive:null,assistDmg:7},
+  teruzumi:{id:'teruzumi',name:'明石全登',shortName:'全登',cls:'Archer',rarity:3,atk:22,def:15,spd:20,passive:null,assistDmg:7},
+  shigeshige:{id:'shigeshige',name:'木村重成',shortName:'重成',cls:'Samurai',rarity:3,atk:20,def:22,spd:16,passive:null,assistDmg:6},
+  morichika:{id:'morichika',name:'長宗我部盛親',shortName:'盛親',cls:'Samurai',rarity:3,atk:23,def:19,spd:15,passive:null,assistDmg:7},
+  kanesuke:{id:'kanesuke',name:'薄田兼相',shortName:'兼相',cls:'Archer',rarity:2,atk:18,def:14,spd:18,passive:null,assistDmg:5},
+  tadasu:{id:'tadasu',name:'渡辺糺',shortName:'糺',cls:'Ninja',rarity:2,atk:16,def:12,spd:24,passive:null,assistDmg:5}
+};
+var GACHA_POOL = [
+  {id:'nobuyuki',rarity:4},{id:'nobuyuki',rarity:4},{id:'nobuyuki',rarity:4},
+  {id:'masamune',rarity:5},{id:'mitsunari',rarity:5},
+  {id:'yoshitsugu',rarity:4},{id:'yoshitsugu',rarity:4},{id:'yoshitsugu',rarity:4},
+  {id:'matabei',rarity:3},{id:'matabei',rarity:3},{id:'matabei',rarity:3},{id:'matabei',rarity:3},{id:'matabei',rarity:3},
+  {id:'teruzumi',rarity:3},{id:'teruzumi',rarity:3},{id:'teruzumi',rarity:3},{id:'teruzumi',rarity:3},{id:'teruzumi',rarity:3},
+  {id:'shigeshige',rarity:3},{id:'shigeshige',rarity:3},{id:'shigeshige',rarity:3},{id:'shigeshige',rarity:3},{id:'shigeshige',rarity:3},
+  {id:'morichika',rarity:3},{id:'morichika',rarity:3},{id:'morichika',rarity:3},{id:'morichika',rarity:3},{id:'morichika',rarity:3},
+  {id:'kanesuke',rarity:2},{id:'kanesuke',rarity:2},{id:'kanesuke',rarity:2},{id:'kanesuke',rarity:2},{id:'kanesuke',rarity:2},{id:'kanesuke',rarity:2},{id:'kanesuke',rarity:2},
+  {id:'tadasu',rarity:2},{id:'tadasu',rarity:2},{id:'tadasu',rarity:2},{id:'tadasu',rarity:2},{id:'tadasu',rarity:2},{id:'tadasu',rarity:2},{id:'tadasu',rarity:2}
+];
+
+/* ═══════════════════════════════════════
+   SECTION 4: DATA — CHAPTERS + STORY
+═══════════════════════════════════════ */
+var CHAPTERS = [
+  {id:1,title:'長篠の野の記憶',book:'I',bookTitle:'書の一・少年の野望',age:9,year:1575,enemyKey:'ch1_nobuyuki',
+   scenes:[
+    {chapterLabel:'第一章　長篠の野の記憶',text:'長篠の野に、火縄の煙がまだ残っていた。\n\n真田の屋敷に、父が帰ってきた。\n馬の足音は重く、いつもの凱旋ではなかった。\n幼い<ruby>弁丸<rt>べんまる</rt></ruby>は縁側に立ち、その姿を見た——\n鎧は赤く染まり、目は遠くを見ていた。'},
+    {speaker:'真田昌幸',text:'「弁丸。武田は負けた。しかしな、真田は負けておらぬ」'},
+    {text:'翌朝、兄の<ruby>信之<rt>のぶゆき</rt></ruby>が木刀を持ってきた。\n\n「弁丸、稽古をつけてやろう」\n\nその声は優しかったが、目は真剣だった。'}
+   ],
+   postBattle:{text:'弁丸は、初めて兄に一本取った。\n\n父は遠くから見ていた。\n何も言わず、ただ頷いた。\n\nいつか、本物の戦場に立つ——\nその予感が、少年の胸に宿った。'},
+   unlockCompanion:null},
+
+  {id:2,title:'本能寺の余波',book:'I',bookTitle:'書の一・少年の野望',age:16,year:1582,enemyKey:'ch2_oda_scout',
+   scenes:[
+    {chapterLabel:'第二章　本能寺の余波',text:'六年が過ぎた。\n<ruby>本能寺<rt>ほんのうじ</rt></ruby>の炎が天下を変えた年。\n<ruby>徳川<rt>とくがわ</rt></ruby>の軍が北へ向かっている。\n真田の領地は、その道の上にあった。'},
+    {speaker:'真田昌幸',text:'「信繁よ。汝を<ruby>上杉<rt>うえすぎ</rt></ruby>へ送る。人質だ——だがそれは、真田が生き残るための賭けだ」'},
+    {text:'人質。その言葉の重さを、<ruby>信繁<rt>のぶしげ</rt></ruby>はまだ完全には理解できなかった。\n\nしかし父の目を見た。\nその奥に、計算と、それを超えた何かがあった。'}
+   ],
+   postBattle:{text:'信繁は道を選んだ。\n\n人質として上杉へ——\nそれは、真田が生き延びるための決断だった。\n\n彼は父に別れを告げ、北へ向かった。'},
+   unlockCompanion:null},
+
+  {id:3,title:'春日山の修練',book:'I',bookTitle:'書の一・少年の野望',age:17,year:1583,enemyKey:'ch3_sparring',
+   scenes:[
+    {chapterLabel:'第三章　春日山の修練',text:'<ruby>春日山<rt>かすがやま</rt></ruby>の城は、冬になると雪に埋もれる。\n\n信繁は毎朝、夜明け前に起きて稽古をした。\n<ruby>上杉<rt>うえすぎ</rt></ruby>の家臣たちは最初、この真田の子を遠巻きに見ていた。\nやがて彼らは、その剣に敬意を抱くようになった。'},
+    {speaker:'霧隠才蔵',text:'「<ruby>才蔵<rt>さいぞう</rt></ruby>と申します。真田様のお供を命じられました」'},
+    {text:'ある夜、使者が来た。\n\n「<ruby>本能寺<rt>ほんのうじ</rt></ruby>にて、<ruby>織田信長<rt>おだのぶなが</rt></ruby>様、ご討死——」\n\n天下が、また揺れた。'}
+   ],
+   postBattle:{text:'信繁は上杉の稽古相手に勝った。\n\n才蔵が静かに近づいた。\n\n「真田様の剣、拝見しました。\n今後は、ともに戦わせていただきます」'},
+   unlockCompanion:'saizo'},
+
+  {id:4,title:'豊臣の御前試合',book:'I',bookTitle:'書の一・少年の野望',age:18,year:1584,enemyKey:'ch4_rival',
+   scenes:[
+    {chapterLabel:'第四章　豊臣の御前試合',text:'<ruby>豊臣秀吉<rt>とよとみひでよし</rt></ruby>。\n百姓の子が、天下人になった男。\n\n真田昌幸は息子を連れて<ruby>大坂<rt>おおさか</rt></ruby>へ向かった。'},
+    {speaker:'豊臣秀吉',text:'「信繁か。お主の父上は、儂が最も信頼する<ruby>謀将<rt>ぼうしょう</rt></ruby>の一人よ。その息子ならば——期待しておるぞ」'},
+    {text:'その年の秋、信繁は<ruby>竹林院<rt>ちくりんいん</rt></ruby>と結婚した。\n彼女は、柔らかく、しかし強かった。'}
+   ],
+   postBattle:{text:'御前試合に勝った。\n\n竹林院が静かに言った。\n「よかった。無事でよかった」\n\n彼女の声に、信繁は初めて気づいた——\n守るべきものが、できたのだと。'},
+   unlockCompanion:'chikurin'},
+
+  {id:5,title:'第一次上田合戦',book:'II',bookTitle:'書の二・乱世の中心',age:19,year:1585,enemyKey:'ch5_ueda_wave',waveMode:true,
+   scenes:[
+    {chapterLabel:'第五章　第一次上田合戦',text:'<ruby>徳川家康<rt>とくがわいえやす</rt></ruby>の大軍が、<ruby>上田城<rt>うえだじょう</rt></ruby>へ迫ってきた。\n\n七千。\n我が方は、二千。'},
+    {speaker:'真田昌幸',text:'「信繁よ。数ではない。地形を、時を、心を——すべて使え。それが真田の戦い方だ」'},
+    {text:'川の対岸に、徳川の先鋒が現れた。\n<ruby>葵紋<rt>あおいもん</rt></ruby>の旗。\n数は圧倒的だった。\n\n信繁は赤備えの兜を被り直した。'}
+   ],
+   postBattle:{text:'徳川の三千が、上田城を越えられなかった。\n\n七千対二千——真田が勝った。\n\n父が言った。\n「よくやった、信繁」\n\nたった一言。それで十分だった。'},
+   unlockCompanion:'masayuki'},
+
+  {id:6,title:'関ヶ原の選択',book:'II',bookTitle:'書の二・乱世の中心',age:34,year:1600,enemyKey:'ch6_sekigahara',
+   scenes:[
+    {chapterLabel:'第六章　関ヶ原の選択',text:'<ruby>豊臣秀吉<rt>とよとみひでよし</rt></ruby>は死んだ。\n天下は再び、戦国の海へと落ちた。\n\n東軍・<ruby>徳川家康<rt>とくがわいえやす</rt></ruby>。\n西軍・<ruby>石田三成<rt>いしだみつなり</rt></ruby>。'},
+    {speaker:'真田信繁',text:'「兄上。次に会う時は——」\n「言うな、信繁。生きていれば、いつかまた」'},
+    {text:'<ruby>関ヶ原<rt>せきがはら</rt></ruby>の戦いは、一日で終わった。\n\n西軍は、敗れた。\n\n信繁は生きていた。\nそれだけが、確かなことだった。'}
+   ],
+   postBattle:{text:'関ヶ原は終わった。\n\n西軍の敗北。\n\n信繁は思った——これで終わりではない。\nこれが、始まりだ。\n\n彼は剣を収め、歩き続けた。'},
+   unlockCompanion:null},
+
+  {id:7,title:'九度山の十三年',book:'II',bookTitle:'書の二・乱世の中心',age:36,year:1600,enemyKey:'ch7_bandit',
+   scenes:[
+    {chapterLabel:'第七章　九度山の十三年',text:'<ruby>九度山<rt>くどやま</rt></ruby>。\n<ruby>高野山<rt>こうやさん</rt></ruby>の麓、山あいの小さな村。\n\n信繁は流人として、ここで暮らした。\n十三年。'},
+    {text:'米も金も少なかった。\n信繁は毎日、庭で鎧を磨いた。\nいつか、また着る日のために。'},
+    {speaker:'真田信繁',text:'「…まだ、使える」'}
+   ],
+   postBattle:{text:'野盗を退けた。\n\n村人が礼を言った。信繁は首を振った。\n\n「流人を助けてくれた村だ。\nこれくらいは、させてくれ」\n\n夜の山に、虫の声が響いた。'},
+   unlockCompanion:null},
+
+  {id:8,title:'大坂への帰還',book:'III',bookTitle:'書の三・最後の赤備え',age:49,year:1614,enemyKey:'ch8_checkpoint',
+   scenes:[
+    {chapterLabel:'第八章　大坂への帰還',text:'使者が来たのは、深夜だった。\n\n「<ruby>豊臣<rt>とよとみ</rt></ruby>秀頼様が、真田殿を必要としておられます。\n<ruby>大坂城<rt>おおさかじょう</rt></ruby>へ——」'},
+    {speaker:'真田信繁',text:'「行きます」'},
+    {text:'<ruby>竹林院<rt>ちくりんいん</rt></ruby>は何も言わなかった。\nただ、夜通し縫い物をしていた。\n\n夜明け、信繁は赤備えの鎧を着た。\n十三年ぶりに。'}
+   ],
+   postBattle:{text:'関所を突破した。\n\n大坂城の灯が見えた。\n\n信繁は立ち止まり、振り返った。\n九度山の山々。十三年分の日々。\n\n「行くぞ」\n\n彼は前を向いた。'},
+   unlockCompanion:null},
+
+  {id:9,title:'真田丸の防衛戦',book:'III',bookTitle:'書の三・最後の赤備え',age:49,year:1614,enemyKey:'ch9_fort',fortMode:true,
+   scenes:[
+    {chapterLabel:'第九章　真田丸の防衛戦',text:'信繁は<ruby>大坂城<rt>おおさかじょう</rt></ruby>の南に、砦を作った。\n\n真田丸。\n\n半月形の出丸。独立した要塞。'},
+    {speaker:'真田昌幸（回想）',text:'「守りを固めてから、初めて攻めに出られる」'},
+    {text:'冬の陣。\n徳川の大軍が押し寄せた。\n\n信繁は真田丸の上に立ち、赤い旗を見た。\n六文銭。\n\n——死を恐れない者の旗だ。'}
+   ],
+   postBattle:{text:'真田丸は、落ちなかった。\n\n徳川の大軍を、信繁は退けた。\n\n城内に歓声が上がった。\n\nしかし信繁は、まだ笑わなかった。\n\n「まだ、終わっていない」'},
+   unlockCompanion:null},
+
+  {id:10,title:'天王寺の最後の突撃',book:'III',bookTitle:'書の三・最後の赤備え',age:49,year:1615,enemyKey:'ch10_final_wave',waveMode:true,
+   scenes:[
+    {chapterLabel:'第十章　天王寺の最後の突撃',text:'<ruby>慶長<rt>けいちょう</rt></ruby>二十年、五月七日。\n\n夜明け前、信繁は鎧を着た。\n静かに、一枚ずつ。\n\n兜の前に、六枚の銭を置いた。\n六文銭——三途の川の渡し賃。'},
+    {text:'<ruby>天王寺<rt>てんのうじ</rt></ruby>。\n\n徳川の大軍が、霧の中に広がっていた。\n数えることに意味はなかった。\n\n信繁は赤備えの騎馬隊を率いて、前に出た。\n\n「<ruby>赤備え<rt>あかぞなえ</rt></ruby>——突撃！」'},
+    {speaker:'島左近（のちの記録より）',text:'「真田日本一の兵、古よりの物語にもこれなき由」'}
+   ],
+   postBattle:null,
+   unlockCompanion:null}
+];
+
+/* ═══════════════════════════════════════
+   SECTION 5: DATA — HISTORICAL NOTES
+═══════════════════════════════════════ */
+var HISTORICAL_NOTES = [
+  {num:1,title:'長篠の野の記憶',
+   fiction:'父昌幸が長篠の敗戦から帰還し、弁丸は兄信之と稽古をした。',
+   history:'長篠の戦い（1575年）で武田勝頼が敗北。真田昌幸は武田氏の旧臣として敗戦を直接経験した。真田信繁の幼名「弁丸」は史料に見られる。'},
+  {num:2,title:'本能寺の余波',
+   fiction:'信繁は父の命で上杉景勝のもとへ人質として送られた。',
+   history:'本能寺の変（1582年）後、真田昌幸は息子・信繁を上杉家への人質として送った。当時の武将が生き残るための外交手段だった。'},
+  {num:3,title:'春日山の修練',
+   fiction:'信繁は春日山城で修練を積み、霧隠才蔵と出会った。',
+   history:'霧隠才蔵は「真田十勇士」の一人として江戸時代の講談・小説に登場する架空の人物。実際の信繁の上杉家での生活の詳細は不明。'},
+  {num:4,title:'豊臣の御前試合',
+   fiction:'信繁は豊臣秀吉に拝謁し、竹林院と結婚した。',
+   history:'真田信繁は豊臣秀吉の側近として仕えた。竹林院（大谷吉継の娘ともされる）は信繁の正室で複数の子をもうけた。'},
+  {num:5,title:'第一次上田合戦',
+   fiction:'信繁は徳川の三度の攻撃を父昌幸とともに退けた。',
+   history:'第一次上田合戦（1585年）では真田昌幸が徳川軍約7000を2000の兵で撃退した。信繁もこの戦いに参加したとされる。'},
+  {num:6,title:'関ヶ原の選択',
+   fiction:'信繁は西軍に加わり関ヶ原へ向かった。',
+   history:'関ヶ原の戦い（1600年）で真田昌幸・信繁父子は西軍に属し、信之（兄）は東軍に。父子は別れ、昌幸・信繁は上田に留まり徳川秀忠軍を足止めした。'},
+  {num:7,title:'九度山の十三年',
+   fiction:'信繁は九度山で流人として暮らし、野盗から村を守った。',
+   history:'関ヶ原後、真田昌幸と信繁は高野山麓の九度山に幽閉された。昌幸は1611年に死去。信繁は1614年の大坂の陣の呼びかけまで13年間を九度山で過ごした。'},
+  {num:8,title:'大坂への帰還',
+   fiction:'信繁は豊臣秀頼の呼びかけに応じ、関所を突破して大坂へ向かった。',
+   history:'1614年、豊臣方は信繁を招いた。信繁は脱出して大坂城に入城。久しぶりに戦場に立つ機会を得た。'},
+  {num:9,title:'真田丸の防衛戦',
+   fiction:'信繁は真田丸を築き、徳川の大軍を相手に防衛に成功した。',
+   history:'真田丸は大坂冬の陣（1614年）で信繁が構築した出城。徳川の攻撃を何度も撃退し「真田丸の戦い」として後世に語り継がれる。'},
+  {num:10,title:'天王寺の最後の突撃',
+   fiction:'信繁は天王寺で赤備えを率いて徳川本陣に三度突撃した。',
+   history:'大坂夏の陣（1615年）5月7日、真田信繁は天王寺・岡山の戦いで家康の本陣に三度迫ったとされる。享年49歳。敵将も「真田日本一の兵」と讃えた。'}
+];
+
+/* ═══════════════════════════════════════
+   SECTION 6: GAME STATE
+═══════════════════════════════════════ */
+var DEFAULT_STATE = {
+  player:{name:'真田信繁',level:1,exp:0,expToNext:150,maxHp:120,hp:120,atk:18,def:12,spd:12,mon:100,koku:30,weapon:null,armor:null,accessory:null,inventory:[]},
+  progress:{currentChapter:1,completedChapters:[],storyBeat:0,endingUnlocked:false,chronicleUnlocked:false},
+  companions:{owned:[],party:[]},
+  gacha:{pullCount:0,pityStar5:0},
+  combat:null
+};
+
+var gs = null; // game state
+var bs = null; // battle state
+var fts = null; // fort state
+var storyQ = [];
+var storyDone = null;
+var battleOnVictory = null;
+var battleOnDefeat = null;
+var currentChapterId = null;
+var armoryFilter = 'all';
+var fortSelectLine = null;
+var fortSelectSlot = null;
+
+/* ═══════════════════════════════════════
+   SECTION 7: SAVE / LOAD
+═══════════════════════════════════════ */
+function saveGame() {
+  try { localStorage.setItem('yukimura_save', JSON.stringify(gs)); } catch(e) {}
+}
+function loadGame() {
+  try {
+    var raw = localStorage.getItem('yukimura_save');
+    if (raw) { gs = JSON.parse(raw); return true; }
+  } catch(e) {}
+  return false;
+}
+function newGameState() {
+  gs = JSON.parse(JSON.stringify(DEFAULT_STATE));
+}
+
+/* ═══════════════════════════════════════
+   SECTION 8: UTILITIES
+═══════════════════════════════════════ */
+function getEquipItem(id) { return EQUIPMENT.find(function(e){return e.id===id;})||null; }
+function getItemDesc(item) {
+  if (!item) return '';
+  var parts=[];
+  if (item.bonus.atk) parts.push('ATK +'+item.bonus.atk);
+  if (item.bonus.def) parts.push('DEF +'+item.bonus.def);
+  if (item.bonus.spd) parts.push('SPD +'+item.bonus.spd);
+  if (item.bonus.hp)  parts.push('HP +'+item.bonus.hp);
+  return parts.join(' / ');
+}
+function getEquipBonus(stat) {
+  var bonus=0;
+  ['weapon','armor','accessory'].forEach(function(slot){
+    var id=gs.player[slot];
+    if (id) { var item=getEquipItem(id); if(item&&item.bonus[stat]) bonus+=item.bonus[stat]; }
+  });
+  return bonus;
+}
+function getEffectiveMaxHp() { return gs.player.maxHp + getEquipBonus('hp'); }
+function getEffectiveAtk() {
+  var atk = gs.player.atk + getEquipBonus('atk');
+  if (bs && bs.crimsonActive) atk = Math.floor(atk * 1.8);
+  if (bs && bs.warBannerActive && bs.warBannerTurns > 0) atk = Math.floor(atk * 1.2);
+  return atk;
+}
+function getEffectiveDef() {
+  var def = gs.player.def + getEquipBonus('def');
+  if (bs && bs.crimsonActive) def = Math.floor(def * 0.8);
+  if (bs && bs.guarding) def = Math.floor(def * 1.5);
+  return def;
+}
+function calcDamage(atk, def) {
+  return Math.max(1, Math.floor((atk - def * 0.6) * (0.85 + Math.random() * 0.30)));
+}
+function starsStr(n) { var s=''; for(var i=0;i<n;i++) s+='★'; return s; }
+function getRarityColor(r) {
+  var c={5:'#c4962a',4:'#c080ff',3:'#6080ff',2:'#40c080',1:'#7a6a50'};
+  return c[r]||'#7a6a50';
+}
+function getPassiveName(p) {
+  var n={shadow_step:'影踏み（回避20%）',healing:'癒し（毎ターン回復）',bamboo_bend:'竹の撓み（被ダメ半減30%）',war_banner:'軍旗（開幕ATK+20%）',ward:'結界（50ダメ吸収）'};
+  return n[p]||p;
+}
+function getPartyCompanions() {
+  return gs.companions.party.map(function(id){ return COMPANION_DATA[id]||null; });
+}
+function hasPartyPassive(passive) {
+  return getPartyCompanions().some(function(c){ return c&&c.passive===passive; });
+}
+
+/* ═══════════════════════════════════════
+   SECTION 9: NOTIFICATIONS
+═══════════════════════════════════════ */
+var notifyTimer = null;
+function notify(msg) {
+  var el = document.getElementById('notification');
+  el.textContent = msg;
+  el.classList.add('show');
+  if (notifyTimer) clearTimeout(notifyTimer);
+  notifyTimer = setTimeout(function(){ el.classList.remove('show'); }, 2500);
+}
+
+/* ═══════════════════════════════════════
+   SECTION 10: SCREEN MANAGEMENT
+═══════════════════════════════════════ */
+function showScreen(name) {
+  var screens = ['title','dojo','map','council','armory','shrine','battle','fort','chronicle'];
+  screens.forEach(function(s){
+    var el = document.getElementById('screen-'+s);
+    if (el) el.classList.remove('active');
+  });
+  var target = document.getElementById('screen-'+name);
+  if (target) target.classList.add('active');
+
+  // Update nav
+  document.querySelectorAll('.nav-btn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.screen===name);
+  });
+  document.getElementById('bottom-nav').classList.add('active');
+  if (name==='title') document.getElementById('bottom-nav').classList.remove('active');
+
+  // Render the screen
+  if (name==='dojo') renderDojo();
+  else if (name==='map') renderMap();
+  else if (name==='council') renderCouncil();
+  else if (name==='armory') renderArmory();
+  else if (name==='shrine') renderShrine();
+  else if (name==='chronicle') renderChronicle();
+}
+
+/* ═══════════════════════════════════════
+   SECTION 11: STORY SYSTEM
+═══════════════════════════════════════ */
+function showStory(scenes, callback) {
+  storyQ = scenes.slice();
+  storyDone = callback || null;
+  showNextStory();
+}
+function showNextStory() {
+  if (!storyQ.length) {
+    document.getElementById('story-panel').classList.remove('active');
+    if (storyDone) { var cb=storyDone; storyDone=null; cb(); }
+    return;
+  }
+  var scene = storyQ.shift();
+  var panel = document.getElementById('story-panel');
+  var labelEl = document.getElementById('story-chapter-label');
+  var speakerEl = document.getElementById('story-speaker');
+  var textEl = document.getElementById('story-text');
+
+  labelEl.textContent = scene.chapterLabel || '';
+  if (scene.speaker) {
+    speakerEl.innerHTML = scene.speaker;
+    speakerEl.style.display = 'block';
+  } else {
+    speakerEl.style.display = 'none';
+  }
+  textEl.innerHTML = scene.text || '';
+  panel.classList.add('active');
+}
+document.getElementById('story-panel').addEventListener('click', function(){ showNextStory(); });
+
+/* ═══════════════════════════════════════
+   SECTION 12: LEVEL-UP
+═══════════════════════════════════════ */
+function checkLevelUp() {
+  var leveled = false;
+  while (gs.player.exp >= gs.player.expToNext && gs.player.level < 50) {
+    gs.player.exp -= gs.player.expToNext;
+    gs.player.level++;
+    gs.player.expToNext = gs.player.level * 100 + 50;
+    gs.player.atk += 3;
+    gs.player.def += 2;
+    gs.player.spd += 1;
+    gs.player.maxHp += 15;
+    gs.player.hp = Math.min(gs.player.hp + 15, gs.player.maxHp);
+    leveled = true;
+    notify('レベルアップ！ Lv.' + gs.player.level);
+  }
+  return leveled;
+}
+
+/* ═══════════════════════════════════════
+   SECTION 13: COMPANION SYSTEM
+═══════════════════════════════════════ */
+function unlockCompanion(id) {
+  if (!gs.companions.owned.includes(id)) {
+    gs.companions.owned.push(id);
+    var c = COMPANION_DATA[id];
+    notify('仲間が加わった：' + c.name + ' (' + starsStr(c.rarity) + ')');
+    saveGame();
+  }
+}
+function addToParty(id) {
+  if (gs.companions.party.length >= 5) { notify('パーティが満員です（最大5名）'); return; }
+  if (gs.companions.party.includes(id)) { notify('すでにパーティに加わっています'); return; }
+  gs.companions.party.push(id);
+  saveGame();
+  renderCouncil();
+}
+function removeFromParty(id) {
+  gs.companions.party = gs.companions.party.filter(function(x){ return x!==id; });
+  saveGame();
+  renderCouncil();
+}
+
+/* ═══════════════════════════════════════
+   SECTION 14: EQUIPMENT SYSTEM
+═══════════════════════════════════════ */
+function equipItem(itemId, invIndex) {
+  var item = getEquipItem(itemId);
+  if (!item) return;
+  var slot = item.type === 'weapon' ? 'weapon' : item.type === 'armor' ? 'armor' : 'accessory';
+  var current = gs.player[slot];
+  if (current) gs.player.inventory.push(current);
+  gs.player.inventory.splice(invIndex, 1);
+  gs.player[slot] = itemId;
+  notify(item.name + 'を装備した');
+  closeModal();
+  saveGame();
+  renderArmory();
+}
+function sellItem(invIndex) {
+  var id = gs.player.inventory[invIndex];
+  var item = getEquipItem(id);
+  if (!item) return;
+  var price = item.rarity * 25;
+  gs.player.inventory.splice(invIndex, 1);
+  gs.player.mon += price;
+  notify(item.name + 'を' + price + '文で売った');
+  closeModal();
+  saveGame();
+  renderArmory();
+}
+function showItemModal(itemId, invIndex) {
+  var item = getEquipItem(itemId);
+  if (!item) return;
+  var price = item.rarity * 25;
+  var slotLabel = item.type==='weapon'?'武器':item.type==='armor'?'鎧':'装飾';
+  document.getElementById('modal-content').innerHTML =
+    '<div class="modal-title">'+item.name+'</div>' +
+    '<div class="modal-stars">'+starsStr(item.rarity)+'</div>' +
+    '<div class="modal-bonus">'+slotLabel+'　'+getItemDesc(item)+'</div>' +
+    '<div class="modal-actions">' +
+      '<button class="btn-gold" onclick="equipItem(\''+itemId+'\','+invIndex+')">装備する</button>' +
+      '<button class="btn-secondary" onclick="sellItem('+invIndex+')">売る（'+price+'文）</button>' +
+      '<button class="btn-secondary" onclick="closeModal()">閉じる</button>' +
+    '</div>';
+  document.getElementById('overlay-modal').classList.add('active');
+}
+function closeModal() {
+  document.getElementById('overlay-modal').classList.remove('active');
+}
+
+/* ═══════════════════════════════════════
+   SECTION 15: GACHA SYSTEM
+═══════════════════════════════════════ */
+function doGachaPull(count) {
+  var cost = count === 1 ? 30 : 150;
+  if (gs.player.koku < cost) { notify('石が足りません（必要：'+cost+'石）'); return; }
+  gs.player.koku -= cost;
+  var results = [];
+  for (var i = 0; i < count; i++) {
+    results.push(singlePull());
+  }
+  saveGame();
+  showGachaResult(results);
+}
+function singlePull() {
+  gs.gacha.pullCount++;
+  gs.gacha.pityStar5++;
+  var roll = Math.random() * 100;
+  var star5Rate = 5;
+  if (gs.gacha.pityStar5 >= 40) star5Rate = 50;
+  if (gs.gacha.pityStar5 >= 50) star5Rate = 100;
+
+  var rarity;
+  if (roll < star5Rate) rarity = 5;
+  else if (roll < star5Rate + 12) rarity = 4;
+  else if (roll < star5Rate + 37) rarity = 3;
+  else if (roll < star5Rate + 72) rarity = 2;
+  else rarity = 1;
+
+  if (rarity === 5) gs.gacha.pityStar5 = 0;
+
+  if (rarity === 1) {
+    // Give low-rarity equipment
+    var pool = ['bokken','cloth_armor','talisman'];
+    var eqId = pool[Math.floor(Math.random()*pool.length)];
+    gs.player.inventory.push(eqId);
+    var eq = getEquipItem(eqId);
+    return {type:'equipment',item:eq,rarity:1};
+  }
+
+  // Pull from companion pool filtered by rarity
+  var pool5 = GACHA_POOL.filter(function(x){return x.rarity===5;});
+  var pool4 = GACHA_POOL.filter(function(x){return x.rarity===4;});
+  var pool3 = GACHA_POOL.filter(function(x){return x.rarity===3;});
+  var pool2 = GACHA_POOL.filter(function(x){return x.rarity===2;});
+  var chosenPool = rarity===5?pool5:rarity===4?pool4:rarity===3?pool3:pool2;
+  var pick = chosenPool[Math.floor(Math.random()*chosenPool.length)];
+  var compId = pick.id;
+  var isDupe = gs.companions.owned.includes(compId);
+  if (!isDupe) { gs.companions.owned.push(compId); }
+  else { gs.player.koku += 30; }
+  return {type:'companion',compId:compId,rarity:rarity,isDupe:isDupe};
+}
+function showGachaResult(results) {
+  var html = '';
+  results.forEach(function(r, i) {
+    var delay = (i * 0.1) + 's';
+    if (r.type === 'equipment') {
+      var item = r.item;
+      html += '<div class="gacha-card" style="animation-delay:'+delay+'">' +
+        '<div class="gacha-portrait rarity-1" style="animation-delay:'+delay+'">⚔</div>' +
+        '<div class="gacha-card-stars rarity-1">'+starsStr(1)+'</div>' +
+        '<div class="gacha-card-name">'+item.name+'</div>' +
+        '</div>';
+    } else {
+      var c = COMPANION_DATA[r.compId];
+      var rc = 'rarity-'+r.rarity;
+      var char = c.shortName.charAt(0);
+      var dupeNote = r.isDupe ? '<br><span style="font-size:9px;color:#c4962a">重複→30石</span>' : '';
+      html += '<div class="gacha-card" style="animation-delay:'+delay+'">' +
+        '<div class="gacha-portrait '+rc+'">'+char+'</div>' +
+        '<div class="gacha-card-stars '+rc+'">'+starsStr(r.rarity)+'</div>' +
+        '<div class="gacha-card-name">'+c.name+dupeNote+'</div>' +
+        '</div>';
+    }
+  });
+  document.getElementById('gacha-cards').innerHTML = html;
+  document.getElementById('overlay-gacha').classList.add('active');
+}
+function closeGachaOverlay() {
+  document.getElementById('overlay-gacha').classList.remove('active');
+  renderShrine();
+}
+
+/* ═══════════════════════════════════════
+   SECTION 16: COMBAT SYSTEM
+═══════════════════════════════════════ */
+function startBattle(enemyKey, chId, onVictory, onDefeat) {
+  var enemy = JSON.parse(JSON.stringify(ENEMIES[enemyKey]));
+  bs = {
+    enemy: enemy,
+    enemyHp: enemy.maxHp,
+    wave: 1,
+    totalWaves: enemy.waves || 1,
+    waveExpAccum: 0,
+    crimsonMeter: 0,
+    crimsonActive: false,
+    crimsonTurns: 0,
+    guarding: false,
+    potions: 3,
+    wardActive: false,
+    wardUsed: false,
+    warBannerActive: false,
+    warBannerTurns: 0,
+    actionLocked: false,
+    log: []
+  };
+  battleOnVictory = onVictory || null;
+  battleOnDefeat = onDefeat || null;
+  if (chId) currentChapterId = chId;
+
+  // Init passives
+  if (hasPartyPassive('ward')) bs.wardActive = true;
+  if (hasPartyPassive('war_banner')) {
+    bs.warBannerActive = true;
+    bs.warBannerTurns = 3;
+    addLog('system','石田三成の軍旗！ 3ターン攻撃力+20%！');
+  }
+
+  showScreen('battle');
+  updateBattleUI();
+}
+
+function addLog(type, msg) {
+  if (!bs) return;
+  bs.log.push({type:type,msg:msg});
+  var logEl = document.getElementById('battle-log');
+  if (!logEl) return;
+  var entry = document.createElement('div');
+  entry.className = 'log-entry log-'+type;
+  entry.textContent = msg;
+  logEl.appendChild(entry);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function updateBattleUI() {
+  if (!bs) return;
+  var enemy = bs.enemy;
+  var maxHp = getEffectiveMaxHp();
+
+  // Enemy section
+  var eHpPct = Math.max(0,Math.min(100,(bs.enemyHp/enemy.maxHp)*100));
+  document.getElementById('battle-enemy-section').innerHTML =
+    '<div class="enemy-name">'+enemy.name+'</div>' +
+    '<div class="bar-label"><span>HP</span><span>'+bs.enemyHp+' / '+enemy.maxHp+'</span></div>' +
+    '<div class="bar-container"><div class="bar-hp" style="width:'+eHpPct+'%"></div></div>';
+
+  // Wave info
+  var waveEl = document.getElementById('battle-wave-info');
+  if (bs.totalWaves > 1) {
+    waveEl.style.display = 'block';
+    waveEl.textContent = '第'+bs.wave+'波 / 全'+bs.totalWaves+'波';
+  } else {
+    waveEl.style.display = 'none';
+  }
+
+  // Player section
+  var pHpPct = Math.max(0,Math.min(100,(gs.player.hp/maxHp)*100));
+  document.getElementById('battle-player-section').innerHTML =
+    '<div class="bar-label"><span>信繁 HP</span><span>'+gs.player.hp+' / '+maxHp+'</span></div>' +
+    '<div class="bar-container"><div class="bar-hp" style="width:'+pHpPct+'%"></div></div>';
+
+  // Crimson meter
+  document.getElementById('bar-crimson').style.width = bs.crimsonMeter + '%';
+  if (bs.crimsonActive) {
+    document.getElementById('screen-battle').classList.add('crimson-active');
+  } else {
+    document.getElementById('screen-battle').classList.remove('crimson-active');
+  }
+
+  // Action buttons
+  document.getElementById('battle-actions').innerHTML =
+    '<button class="battle-btn" onclick="battleAction(\'attack\')">⚔ 攻撃</button>' +
+    '<button class="battle-btn" onclick="battleAction(\'guard\')">🛡 防御</button>' +
+    '<button class="battle-btn" onclick="battleAction(\'potion\')" '+(bs.potions<=0?'disabled':'')+'>🧪 回復薬（'+bs.potions+'）</button>' +
+    '<button class="battle-btn" onclick="battleAction(\'flee\')">💨 逃走</button>';
+}
+
+function battleAction(action) {
+  if (!bs || bs.actionLocked) return;
+  bs.actionLocked = true;
+
+  // Healing passive (Chikurin) at start of player turn
+  if (hasPartyPassive('healing')) {
+    var heal = Math.floor(getEffectiveMaxHp() * 0.08);
+    gs.player.hp = Math.min(getEffectiveMaxHp(), gs.player.hp + heal);
+    addLog('heal','竹林院の癒しで HP+'+heal);
+  }
+
+  // Decrement war banner
+  if (bs.warBannerActive && bs.warBannerTurns > 0) {
+    bs.warBannerTurns--;
+    if (!bs.warBannerTurns) { bs.warBannerActive = false; addLog('system','軍旗の効果が切れた'); }
+  }
+  // Decrement crimson mode
+  if (bs.crimsonActive) {
+    bs.crimsonTurns--;
+    if (bs.crimsonTurns <= 0) {
+      bs.crimsonActive = false;
+      document.getElementById('screen-battle').classList.remove('crimson-active');
+      addLog('crimson','赤備えモード終了');
+    }
+  }
+
+  var fled = false;
+  if (action === 'attack') {
+    doAttack();
+  } else if (action === 'guard') {
+    bs.guarding = true;
+    addLog('player','🛡 防御姿勢をとった');
+  } else if (action === 'potion') {
+    if (bs.potions > 0) {
+      bs.potions--;
+      var restore = Math.floor(getEffectiveMaxHp() * 0.35);
+      gs.player.hp = Math.min(getEffectiveMaxHp(), gs.player.hp + restore);
+      addLog('heal','🧪 回復薬！ HP+'+restore+' (残り'+bs.potions+'本)');
+    }
+  } else if (action === 'flee') {
+    fled = true;
+    var chance = 40 + Math.min(30, (gs.player.spd + getEquipBonus('spd') - bs.enemy.spd) * 3);
+    if (Math.random() * 100 < chance) {
+      addLog('system','💨 うまく逃げた！');
+      updateBattleUI();
+      setTimeout(function(){ endBattle('flee'); }, 800);
+      return;
+    } else {
+      addLog('system','💨 逃走失敗！');
+    }
+  }
+
+  if (!fled && bs.enemyHp > 0) {
+    updateBattleUI();
+    setTimeout(function(){
+      enemyTurn();
+    }, 600);
+  }
+}
+
+function doAttack() {
+  var dmg = calcDamage(getEffectiveAtk(), bs.enemy.def);
+  bs.enemyHp = Math.max(0, bs.enemyHp - dmg);
+  addLog('player','⚔ '+ dmg +'のダメージ！');
+
+  // Companion assists
+  getPartyCompanions().forEach(function(c){
+    if (!c) return;
+    var ad = c.assistDmg || Math.floor(c.atk * 0.3);
+    if (bs.warBannerActive) ad = Math.floor(ad * 1.2);
+    bs.enemyHp = Math.max(0, bs.enemyHp - ad);
+    addLog('player', c.shortName+'の援護 +'+ad+'！');
+  });
+
+  if (bs.enemyHp <= 0) {
+    updateBattleUI();
+    setTimeout(function(){ handleWaveOrVictory(); }, 600);
+    return;
+  }
+}
+
+function enemyTurn() {
+  var def = getEffectiveDef();
+  bs.guarding = false; // reset after being checked
+
+  // shadow_step: 20% dodge
+  if (hasPartyPassive('shadow_step') && Math.random() < 0.2) {
+    addLog('player','才蔵の影踏みで回避！');
+    bs.actionLocked = false;
+    updateBattleUI();
+    return;
+  }
+
+  var dmg = calcDamage(bs.enemy.atk, def);
+
+  // bamboo_bend: 30% halve
+  if (hasPartyPassive('bamboo_bend') && Math.random() < 0.3) {
+    dmg = Math.floor(dmg / 2);
+    addLog('player','昌幸の竹の撓みで被害半減！');
+  }
+
+  // ward: absorb 50 once
+  if (bs.wardActive && !bs.wardUsed && dmg > 0) {
+    var absorbed = Math.min(50, dmg);
+    dmg = Math.max(0, dmg - absorbed);
+    bs.wardUsed = true;
+    addLog('player','吉継の結界が '+absorbed+'ダメージを吸収！');
+  }
+
+  gs.player.hp = Math.max(0, gs.player.hp - dmg);
+  addLog('enemy', bs.enemy.name+'の攻撃！ -'+dmg+'HP');
+
+  // Fill crimson meter
+  if (dmg > 0) {
+    var fill = (dmg / getEffectiveMaxHp()) * 100;
+    bs.crimsonMeter = Math.min(100, bs.crimsonMeter + fill);
+    if (bs.crimsonMeter >= 100 && !bs.crimsonActive) {
+      bs.crimsonActive = true;
+      bs.crimsonTurns = 3;
+      bs.crimsonMeter = 0;
+      addLog('crimson','━━ 赤備えモード発動！ ATK×1.8、3ターン ━━');
+    }
+  }
+
+  updateBattleUI();
+
+  if (gs.player.hp <= 0) {
+    setTimeout(function(){ endBattle('lose'); }, 600);
+  } else {
+    bs.actionLocked = false;
+  }
+}
+
+function handleWaveOrVictory() {
+  if (bs.totalWaves > 1 && bs.wave < bs.totalWaves) {
+    // Give wave exp
+    bs.waveExpAccum += bs.enemy.expPerWave || 0;
+    addLog('system','第'+bs.wave+'波撃破！');
+    bs.wave++;
+    bs.enemyHp = bs.enemy.maxHp;
+    bs.actionLocked = false;
+    updateBattleUI();
+  } else {
+    endBattle('win');
+  }
+}
+
+function endBattle(result) {
+  document.getElementById('screen-battle').classList.remove('crimson-active');
+  bs.actionLocked = true;
+
+  if (result === 'win') {
+    var exp = bs.enemy.expPerWave
+      ? (bs.waveExpAccum + (bs.enemy.expPerWave || 0) + (bs.enemy.expBonus || 0))
+      : (bs.enemy.exp || 0);
+    var mon = bs.enemy.mon || 0;
+    var koku = bs.enemy.koku || 0;
+    gs.player.exp += exp;
+    gs.player.mon += mon;
+    gs.player.koku += koku;
+    addLog('system','勝利！ EXP+'+exp+' 文+'+mon+' 石+'+koku);
+
+    // Loot drop
+    var chapter = CHAPTERS.find(function(c){ return c.id===currentChapterId; });
+    var chNum = chapter ? chapter.id : 1;
+    var lootPool = LOOT_POOLS[Math.min(10, chNum)] || LOOT_POOLS[1];
+    if (Math.random() < 0.35) {
+      var lootId = lootPool[Math.floor(Math.random()*lootPool.length)];
+      gs.player.inventory.push(lootId);
+      var lootItem = getEquipItem(lootId);
+      addLog('system','戦利品：'+lootItem.name+'を入手！');
+    }
+
+    checkLevelUp();
+    saveGame();
+    updateBattleUI();
+
+    setTimeout(function(){
+      if (battleOnVictory) { var cb = battleOnVictory; battleOnVictory = null; cb(); }
+      else { completeChapter(currentChapterId); }
+    }, 1000);
+
+  } else if (result === 'lose') {
+    saveGame();
+    document.getElementById('gameover-msg').innerHTML =
+      '体力が尽きた。<br>もう一度挑戦するか、引き下がるか。';
+    document.getElementById('gameover-overlay').classList.add('active');
+
+  } else if (result === 'flee') {
+    saveGame();
+    showScreen('map');
+  }
+}
+
+function retryBattle() {
+  document.getElementById('gameover-overlay').classList.remove('active');
+  // Restore player HP to full for retry
+  gs.player.hp = getEffectiveMaxHp();
+  // Restart battle with same enemy + chapter
+  var chapter = CHAPTERS.find(function(c){ return c.id===currentChapterId; });
+  if (chapter) {
+    startBattle(chapter.enemyKey, chapter.id, null, null);
+  } else {
+    showScreen('map');
+  }
+}
+
+function retreatToMap() {
+  document.getElementById('gameover-overlay').classList.remove('active');
+  showScreen('map');
+}
+
+/* ═══════════════════════════════════════
+   SECTION 17: FORT DEFENSE
+═══════════════════════════════════════ */
+function startFortDefense(chapterId) {
+  currentChapterId = chapterId;
+  fts = {
+    fortHp: 1000,
+    maxFortHp: 1000,
+    flank: [null, null],
+    front: [null, null],
+    reserve: [null],
+    currentWave: 1,
+    totalWaves: 5,
+    phase: 'placement',
+    waveLog: []
+  };
+  showScreen('fort');
+  renderFort();
+}
+
+function renderFort() {
+  if (!fts) return;
+  var content = document.getElementById('fort-content');
+  var fortPct = Math.max(0, Math.min(100, (fts.fortHp / fts.maxFortHp) * 100));
+
+  if (fts.phase === 'placement') {
+    content.innerHTML =
+      '<div class="fort-hp-section">' +
+        '<div class="fort-title">🏯 真田丸</div>' +
+        '<div class="bar-label"><span>砦HP</span><span>'+fts.fortHp+' / '+fts.maxFortHp+'</span></div>' +
+        '<div class="bar-container"><div class="bar-fort" style="width:'+fortPct+'%"></div></div>' +
+      '</div>' +
+      '<div style="padding:12px 16px">' +
+        '<div class="section-label" style="margin-bottom:12px">配備する仲間を選べ</div>' +
+        renderFortLine('flank','側面（最大2名）',fts.flank) +
+        renderFortLine('front','前線（最大2名）',fts.front) +
+        renderFortLine('reserve','後備（最大1名）',fts.reserve) +
+        '<div class="divider"></div>' +
+        '<div class="section-label">兵効果：忍者＠側面=防御+20%　侍＠前線=攻撃+20%　弓/巫女＠後備=砦HP回復</div>' +
+        '<div class="divider"></div>' +
+        '<button class="btn-primary" onclick="beginFortAssault()">出陣！　徳川軍を迎え撃て</button>' +
+      '</div>' +
+      renderFortRoster();
+  } else if (fts.phase === 'combat') {
+    var fortPct2 = Math.max(0, Math.min(100, (fts.fortHp / fts.maxFortHp) * 100));
+    var waveLogHtml = fts.waveLog.map(function(l){ return '<div class="log-entry log-system">'+l+'</div>'; }).join('');
+    content.innerHTML =
+      '<div class="fort-hp-section">' +
+        '<div class="fort-title">🏯 真田丸　第'+fts.currentWave+'波 / '+fts.totalWaves+'波</div>' +
+        '<div class="bar-label"><span>砦HP</span><span>'+fts.fortHp+' / '+fts.maxFortHp+'</span></div>' +
+        '<div class="bar-container"><div class="bar-fort" style="width:'+fortPct2+'%"></div></div>' +
+      '</div>' +
+      '<div class="fort-wave-log">'+waveLogHtml+'</div>' +
+      (fts.pendingFight ?
+        '<div style="padding:12px 16px"><button class="btn-primary" onclick="fightFortBreakthrough()">⚔ 突撃隊長と戦う</button></div>'
+        : '') ;
+  } else if (fts.phase === 'complete') {
+    content.innerHTML =
+      '<div style="padding:32px 16px;text-align:center">' +
+        '<div style="font-family:\'Noto Serif JP\',serif;font-size:22px;color:#c4962a;margin-bottom:24px">真田丸、守り切った！</div>' +
+        '<div style="font-size:14px;color:#f5f0e8;line-height:2">砦HP：'+fts.fortHp+'<br>徳川の大軍を退けた</div>' +
+      '</div>';
+  } else if (fts.phase === 'failed') {
+    content.innerHTML =
+      '<div style="padding:32px 16px;text-align:center">' +
+        '<div style="font-family:\'Noto Serif JP\',serif;font-size:22px;color:#cc2222;margin-bottom:24px">真田丸、落城…</div>' +
+        '<button class="btn-secondary" onclick="startFortDefense(9)">再挑戦</button>' +
+      '</div>';
+  }
+}
+
+function renderFortLine(lineKey, label, slots) {
+  var html = '<div class="fort-line">' +
+    '<div class="fort-line-header"><span>'+label+'</span></div>' +
+    '<div class="fort-slots">';
+  for (var i = 0; i < slots.length; i++) {
+    var cId = slots[i];
+    if (cId) {
+      var c = COMPANION_DATA[cId];
+      html += '<div class="fort-slot filled" onclick="removeFortSlot(\''+lineKey+'\','+i+')">' +
+        '<div class="slot-char">'+c.shortName.charAt(0)+'</div>' +
+        '<div class="slot-name">'+c.shortName+'</div>' +
+        '</div>';
+    } else {
+      html += '<div class="fort-slot" onclick="openFortSlot(\''+lineKey+'\','+i+')">＋</div>';
+    }
+  }
+  html += '</div></div>';
+  return html;
+}
+
+function renderFortRoster() {
+  var allPlaced = [];
+  fts.flank.forEach(function(x){ if(x) allPlaced.push(x); });
+  fts.front.forEach(function(x){ if(x) allPlaced.push(x); });
+  fts.reserve.forEach(function(x){ if(x) allPlaced.push(x); });
+
+  var html = '<div style="padding:0 0 8px"><div class="section-label">仲間リスト</div>';
+  gs.companions.party.forEach(function(id){
+    var c = COMPANION_DATA[id];
+    var placed = allPlaced.includes(id);
+    html += '<div class="companion-card '+(placed?'in-party':'')+'" onclick="selectFortCompanion(\''+id+'\')" style="margin-bottom:8px">' +
+      '<div class="comp-portrait '+' rarity-'+c.rarity+'" style="background:rgba('+rarityRgb(c.rarity)+',0.2);color:'+getRarityColor(c.rarity)+'">'+c.shortName.charAt(0)+'</div>' +
+      '<div class="comp-info"><div class="comp-name">'+c.name+'</div><div class="comp-class">'+c.cls+(placed?' ✓配備済':'')+'</div></div>' +
+      '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+var fortPendingCompanion = null;
+function selectFortCompanion(id) { fortPendingCompanion = id; notify(COMPANION_DATA[id].shortName+'を選択。配備先のスロットをタップしてください'); }
+function openFortSlot(lineKey, idx) {
+  if (!fortPendingCompanion) { notify('先に仲間リストから選択してください'); return; }
+  var lineArr = lineKey==='flank'?fts.flank:lineKey==='front'?fts.front:fts.reserve;
+  lineArr[idx] = fortPendingCompanion;
+  fortPendingCompanion = null;
+  renderFort();
+}
+function removeFortSlot(lineKey, idx) {
+  var lineArr = lineKey==='flank'?fts.flank:lineKey==='front'?fts.front:fts.reserve;
+  lineArr[idx] = null;
+  renderFort();
+}
+
+function rarityRgb(r) {
+  var m = {5:'196,150,42',4:'192,128,255',3:'96,128,255',2:'64,192,128',1:'122,106,80'};
+  return m[r]||'122,106,80';
+}
+
+function beginFortAssault() {
+  fts.phase = 'combat';
+  fts.waveLog = [];
+  processFortWave();
+}
+
+function processFortWave() {
+  var log = fts.waveLog;
+  log.push('━━ 第'+fts.currentWave+'波 ━━');
+
+  // Fort takes 150 damage
+  var dmg = 150;
+  // Ninja on Flank: -10% per ninja
+  fts.flank.forEach(function(id){
+    if (id && COMPANION_DATA[id] && COMPANION_DATA[id].cls==='Ninja') dmg = Math.floor(dmg * 0.8);
+  });
+  // Samurai on Front: no fort dmg effect but boosts player atk for this fight (handled in battle)
+  fts.fortHp = Math.max(0, fts.fortHp - dmg);
+  log.push('砦が'+dmg+'のダメージを受けた（残HP：'+fts.fortHp+'）');
+
+  // Reserve healer restores
+  fts.reserve.forEach(function(id){
+    if (id && COMPANION_DATA[id]) {
+      var cls = COMPANION_DATA[id].cls;
+      if (cls==='Archer'||cls==='Shrine Maiden') {
+        var heal = 60;
+        fts.fortHp = Math.min(fts.maxFortHp, fts.fortHp + heal);
+        log.push(COMPANION_DATA[id].shortName+'が砦を+'+heal+'HP回復！（現HP：'+fts.fortHp+'）');
+      }
+    }
+  });
+
+  if (fts.fortHp <= 0) {
+    log.push('砦HP０！ 真田丸、落城…');
+    fts.phase = 'failed';
+    renderFort();
+    return;
+  }
+
+  fts.pendingFight = true;
+  renderFort();
+}
+
+function fightFortBreakthrough() {
+  fts.pendingFight = false;
+  // Apply samurai front bonus (store temporarily)
+  var samuraiBonus = 0;
+  fts.front.forEach(function(id){
+    if (id && COMPANION_DATA[id] && COMPANION_DATA[id].cls==='Samurai') samuraiBonus++;
+  });
+
+  startBattle('ch9_fort', 9, function(){
+    // After winning this wave's battle
+    fts.waveLog.push('第'+fts.currentWave+'波の突撃隊長を撃破！');
+    if (fts.currentWave >= fts.totalWaves) {
+      // All waves cleared
+      fts.phase = 'complete';
+      renderFort();
+      saveGame();
+      setTimeout(function(){ completeChapter(9); }, 1500);
+    } else {
+      fts.currentWave++;
+      showScreen('fort');
+      processFortWave();
+    }
+  }, null);
+}
+
+/* ═══════════════════════════════════════
+   SECTION 18: CHAPTER PROGRESSION
+═══════════════════════════════════════ */
+function startChapter(chapterId) {
+  var chapter = CHAPTERS.find(function(c){ return c.id===chapterId; });
+  if (!chapter) return;
+  currentChapterId = chapterId;
+  // Restore potions
+  if (bs) bs.potions = 3;
+
+  showStory(chapter.scenes, function(){
+    if (chapter.fortMode) {
+      startFortDefense(chapterId);
+    } else {
+      startBattle(chapter.enemyKey, chapterId, null, null);
+    }
+  });
+}
+
+function completeChapter(chapterId) {
+  var chapter = CHAPTERS.find(function(c){ return c.id===chapterId; });
+  if (!chapter) { showScreen('map'); return; }
+
+  if (!gs.progress.completedChapters.includes(chapterId)) {
+    gs.progress.completedChapters.push(chapterId);
+  }
+  // Unlock next chapter
+  var nextId = chapterId + 1;
+  if (nextId <= 10 && nextId > gs.progress.currentChapter) {
+    gs.progress.currentChapter = nextId;
+  }
+
+  // Unlock companion
+  if (chapter.unlockCompanion) { unlockCompanion(chapter.unlockCompanion); }
+
+  // Special: chapter 10 triggers ending
+  if (chapterId === 10) {
+    saveGame();
+    if (chapter.postBattle) {
+      showStory([chapter.postBattle], function(){ showEnding(); });
+    } else {
+      showEnding();
+    }
+    return;
+  }
+
+  saveGame();
+
+  if (chapter.postBattle) {
+    showStory([chapter.postBattle], function(){ showScreen('map'); });
+  } else {
+    showScreen('map');
+  }
+  notify('第'+chapterId+'章クリア！');
+}
+
+/* ═══════════════════════════════════════
+   SECTION 19: ENDING + CHRONICLE
+═══════════════════════════════════════ */
+function showEnding() {
+  var endingText =
+    '慶長二十年五月七日。\n\n' +
+    '真田信繁は、天王寺の戦場で倒れた。\n\n' +
+    '彼は三度、徳川家康の本陣に迫った。\n三度目に、家康は覚悟したという——これで終わりだ、と。\n\n' +
+    'しかし信繁はもう、立ち上がれなかった。\nひとりの武士の槍が、その背を貫いた。\n\n' +
+    '彼は松の木の下で休んだ。\n静かに、笑っていたという。\n\n' +
+    '「真田日本一の兵」——敵将がそう記した。\n\n' +
+    '享年四十九歳。\n\n' +
+    '真田信繁。\nのちに世は、彼を「幸村」と呼ぶ。\n\n' +
+    '六文銭の旗は、風の中で揺れた。\n\n' +
+    '一陣の風が、戦場を渡っていった。';
+
+  document.getElementById('ending-text').textContent = endingText;
+  gs.progress.endingUnlocked = true;
+  saveGame();
+  document.getElementById('screen-ending').classList.add('active');
+}
+
+function unlockChronicle() {
+  gs.progress.chronicleUnlocked = true;
+  document.getElementById('screen-ending').classList.remove('active');
+  document.getElementById('nav-chronicle').style.display = '';
+  saveGame();
+  showScreen('chronicle');
+  notify('📜 記録が解放された！');
+}
+
+/* ═══════════════════════════════════════
+   SECTION 20: TITLE SCREEN ACTIONS
+═══════════════════════════════════════ */
+function startNewGame() {
+  newGameState();
+  saveGame();
+  document.getElementById('screen-title').classList.remove('active');
+  showScreen('map');
+}
+function continueGame() {
+  document.getElementById('screen-title').classList.remove('active');
+  if (gs.progress.chronicleUnlocked) {
+    document.getElementById('nav-chronicle').style.display = '';
+  }
+  showScreen('map');
+}
+
+/* ═══════════════════════════════════════
+   SECTION 21: REST ACTION
+═══════════════════════════════════════ */
+function doRest() {
+  var maxHp = getEffectiveMaxHp();
+  var missing = maxHp - gs.player.hp;
+  if (missing <= 0) { notify('HPは満タンです'); return; }
+  var cost = Math.ceil(missing * 0.15);
+  if (gs.player.mon < cost) { notify('文が足りません（必要：'+cost+'文）'); return; }
+  gs.player.mon -= cost;
+  gs.player.hp = maxHp;
+  notify('休息した。HP全回復（-'+cost+'文）');
+  saveGame();
+  renderDojo();
+}
+
+/* ═══════════════════════════════════════
+   SECTION 22: RENDER — DOJO
+═══════════════════════════════════════ */
+function renderDojo() {
+  var p = gs.player;
+  var maxHp = getEffectiveMaxHp();
+  var hpPct = Math.max(0, Math.min(100, (p.hp / maxHp) * 100));
+  var expPct = Math.max(0, Math.min(100, (p.exp / p.expToNext) * 100));
+  var weapon = p.weapon ? getEquipItem(p.weapon) : null;
+  var armor  = p.armor  ? getEquipItem(p.armor)  : null;
+  var acc    = p.accessory ? getEquipItem(p.accessory) : null;
+  var missing = maxHp - p.hp;
+  var restCost = Math.ceil(missing * 0.15);
+  var canRest = missing > 0 && p.mon >= restCost;
+
+  document.getElementById('dojo-content').innerHTML =
+    '<div class="player-portrait">' +
+      '<div class="portrait-circle">信</div>' +
+      '<div class="player-info">' +
+        '<div class="player-name">'+p.name+'</div>' +
+        '<div class="player-level">Lv.'+p.level+'　（最大Lv.50）</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="bar-label"><span>HP</span><span>'+p.hp+' / '+maxHp+'</span></div>' +
+    '<div class="bar-container"><div class="bar-hp" style="width:'+hpPct+'%"></div></div>' +
+    '<div class="bar-label"><span>EXP</span><span>'+p.exp+' / '+p.expToNext+'</span></div>' +
+    '<div class="bar-container"><div class="bar-exp" style="width:'+expPct+'%"></div></div>' +
+    '<div class="divider"></div>' +
+    '<div class="stat-grid">' +
+      '<div class="stat-box"><div class="stat-label">ATK</div><div class="stat-value">'+(p.atk+getEquipBonus('atk'))+'</div></div>' +
+      '<div class="stat-box"><div class="stat-label">DEF</div><div class="stat-value">'+(p.def+getEquipBonus('def'))+'</div></div>' +
+      '<div class="stat-box"><div class="stat-label">SPD</div><div class="stat-value">'+(p.spd+getEquipBonus('spd'))+'</div></div>' +
+      '<div class="stat-box"><div class="stat-label">文</div><div class="stat-value">'+p.mon+'</div></div>' +
+      '<div class="stat-box"><div class="stat-label">石</div><div class="stat-value">'+p.koku+'</div></div>' +
+      '<div class="stat-box"><div class="stat-label">章</div><div class="stat-value">'+gs.progress.currentChapter+'</div></div>' +
+    '</div>' +
+    '<div class="section-label">装備</div>' +
+    '<div class="equip-slots">' +
+      dojoEquipSlot('⚔','武器',weapon) +
+      dojoEquipSlot('🛡','鎧',armor) +
+      dojoEquipSlot('📿','装飾',acc) +
+    '</div>' +
+    '<div class="divider"></div>' +
+    '<button class="btn-primary" onclick="doRest()" '+(!canRest?'disabled':'')+'>'+
+      '🛌 休息する（'+(missing<=0?'HP満タン':restCost+'文')+')' +
+    '</button>';
+}
+function dojoEquipSlot(icon, label, item) {
+  return '<div class="equip-slot">' +
+    '<div class="equip-slot-icon">'+icon+'</div>' +
+    '<div class="equip-slot-info">' +
+      '<div class="equip-slot-type">'+label+'</div>' +
+      (item ?
+        '<div class="equip-slot-name">'+item.name+'　'+starsStr(item.rarity)+'　<span style="font-size:11px;color:var(--muted)">'+getItemDesc(item)+'</span></div>'
+        :
+        '<div class="equip-slot-empty">なし</div>'
+      ) +
+    '</div>' +
+  '</div>';
+}
+
+/* ═══════════════════════════════════════
+   SECTION 23: RENDER — MAP
+═══════════════════════════════════════ */
+function renderMap() {
+  var html = '';
+  var currentBook = null;
+  CHAPTERS.forEach(function(ch) {
+    if (ch.book !== currentBook) {
+      currentBook = ch.book;
+      var bookObj = CHAPTERS.find(function(c){ return c.book===currentBook; });
+      html += '<div class="book-header">'+bookObj.bookTitle+'</div>';
+    }
+    var completed = gs.progress.completedChapters.includes(ch.id);
+    var isCurrent = ch.id === gs.progress.currentChapter;
+    var locked = ch.id > gs.progress.currentChapter;
+    var stateClass = completed ? 'completed' : isCurrent ? 'current' : locked ? 'locked' : '';
+    var statusIcon = completed ? '✅' : isCurrent ? '▶' : locked ? '🔒' : '◎';
+    var clickAttr = locked ? '' : 'onclick="startChapter('+ch.id+')"';
+    var special = ch.waveMode ? '（波状戦）' : ch.fortMode ? '（砦防衛）' : '';
+    html += '<div class="chapter-card '+stateClass+'" '+clickAttr+'>' +
+      '<div class="chapter-num">'+ch.id+'</div>' +
+      '<div class="chapter-info">' +
+        '<div class="chapter-title">'+ch.title+special+'</div>' +
+        '<div class="chapter-meta">'+ch.age+'歳　（'+ch.year+'年）</div>' +
+      '</div>' +
+      '<div class="chapter-status">'+statusIcon+'</div>' +
+    '</div>';
+  });
+  document.getElementById('map-content').innerHTML = html;
+}
+
+/* ═══════════════════════════════════════
+   SECTION 24: RENDER — COUNCIL
+═══════════════════════════════════════ */
+function renderCouncil() {
+  var partySlots = '';
+  for (var i = 0; i < 5; i++) {
+    var cId = gs.companions.party[i];
+    if (cId) {
+      var c = COMPANION_DATA[cId];
+      partySlots +=
+        '<div class="party-slot filled" onclick="removeFromParty(\''+cId+'\')">' +
+          '<div class="slot-portrait rarity-'+c.rarity+'" style="background:rgba('+rarityRgb(c.rarity)+',.2);color:'+getRarityColor(c.rarity)+'">'+c.shortName.charAt(0)+'</div>' +
+          '<div class="slot-name">'+c.shortName+'</div>' +
+        '</div>';
+    } else {
+      partySlots += '<div class="party-slot"><div class="slot-empty-text">空き</div></div>';
+    }
+  }
+
+  var rosterHtml = '';
+  if (!gs.companions.owned.length) {
+    rosterHtml = '<div class="empty-msg">まだ仲間がいない。\n章を進めるか招魂をしよう。</div>';
+  } else {
+    gs.companions.owned.forEach(function(id){
+      var c = COMPANION_DATA[id];
+      if (!c) return;
+      var inParty = gs.companions.party.includes(id);
+      rosterHtml +=
+        '<div class="companion-card '+(inParty?'in-party':'')+'" onclick="'+(inParty?'removeFromParty(\''+id+'\')':'addToParty(\''+id+'\')')+'">' +
+          '<div class="comp-portrait rarity-'+c.rarity+'" style="background:rgba('+rarityRgb(c.rarity)+',.2);color:'+getRarityColor(c.rarity)+'">'+c.shortName.charAt(0)+'</div>' +
+          '<div class="comp-info">' +
+            '<div class="comp-name">'+c.name+'</div>' +
+            '<div class="comp-class">'+c.cls+'　<span class="comp-stars">'+starsStr(c.rarity)+'</span></div>' +
+            '<div class="comp-stats">ATK:'+c.atk+' DEF:'+c.def+' SPD:'+c.spd+'</div>' +
+            (c.passive ? '<div class="comp-passive">'+getPassiveName(c.passive)+'</div>' : '') +
+          '</div>' +
+          '<div style="font-size:12px;color:'+(inParty?'var(--gold)':'var(--muted)')+'">'+
+            (inParty?'✓出陣中':'＋出陣')+
+          '</div>' +
+        '</div>';
+    });
+  }
+
+  document.getElementById('council-content').innerHTML =
+    '<div class="section-label">出陣メンバー（タップで外す）</div>' +
+    '<div class="party-row">'+partySlots+'</div>' +
+    '<div class="section-label">仲間一覧（タップで追加）</div>' +
+    '<div class="companion-list">'+rosterHtml+'</div>';
+}
+
+/* ═══════════════════════════════════════
+   SECTION 25: RENDER — ARMORY
+═══════════════════════════════════════ */
+function renderArmory() {
+  var inventory = gs.player.inventory;
+  var filterMap = {'all':null,'weapon':'weapon','armor':'armor','accessory':'accessory'};
+  var typeFilter = filterMap[armoryFilter];
+
+  var filtered = [];
+  inventory.forEach(function(id, idx){
+    var item = getEquipItem(id);
+    if (!item) return;
+    if (typeFilter && item.type !== typeFilter) return;
+    filtered.push({id:id,idx:idx,item:item});
+  });
+
+  var filterHtml =
+    '<div class="filter-row">' +
+    ['all','weapon','armor','accessory'].map(function(f){
+      var label = f==='all'?'全て':f==='weapon'?'武器':f==='armor'?'鎧':'装飾';
+      return '<button class="filter-btn '+(armoryFilter===f?'active':'')+'" onclick="setArmoryFilter(\''+f+'\')">'+label+'</button>';
+    }).join('') +
+    '</div>';
+
+  var gridHtml = '';
+  if (!filtered.length) {
+    gridHtml = '<div class="empty-msg">アイテムがない</div>';
+  } else {
+    filtered.forEach(function(entry){
+      var item = entry.item;
+      gridHtml +=
+        '<div class="item-card" onclick="showItemModal(\''+item.id+'\','+entry.idx+')">' +
+          '<div class="item-name">'+item.name+'</div>' +
+          '<div class="item-rarity">'+starsStr(item.rarity)+'</div>' +
+          '<div class="item-bonus">'+getItemDesc(item)+'</div>' +
+        '</div>';
+    });
+    gridHtml = '<div class="inventory-grid">'+gridHtml+'</div>';
+  }
+
+  document.getElementById('armory-content').innerHTML = filterHtml + gridHtml;
+}
+function setArmoryFilter(f) { armoryFilter = f; renderArmory(); }
+
+/* ═══════════════════════════════════════
+   SECTION 26: RENDER — SHRINE
+═══════════════════════════════════════ */
+function renderShrine() {
+  var pity = gs.gacha.pityStar5;
+  var pityNote = pity >= 40 ? '確率50%（ソフト天井）' : pity >= 50 ? '★★★★★確定！' : '次の天井まで '+(50-pity)+'回';
+  document.getElementById('shrine-content').innerHTML =
+    '<div class="shrine-balance">' +
+      '<div class="koku-amount">'+gs.player.koku+'石</div>' +
+      '<div class="koku-label">所持石（こく）</div>' +
+    '</div>' +
+    '<div class="torii-gate">⛩️</div>' +
+    '<div class="shrine-btns">' +
+      '<button class="btn-gold" onclick="doGachaPull(1)">1回召喚（30石）</button>' +
+      '<button class="btn-gold" onclick="doGachaPull(5)">5回召喚（150石）</button>' +
+    '</div>' +
+    '<div class="pity-info">' +
+      '天井カウント：'+pity+' / 50<br>'+pityNote +
+      '<br><br>★★★★★ 5%　★★★★ 12%　★★★ 25%　★★ 35%　★ 23%' +
+    '</div>';
+}
+
+/* ═══════════════════════════════════════
+   SECTION 27: RENDER — CHRONICLE
+═══════════════════════════════════════ */
+function renderChronicle() {
+  var html = '';
+  HISTORICAL_NOTES.forEach(function(note){
+    html +=
+      '<div class="chronicle-entry">' +
+        '<div class="chronicle-chapter">第'+note.num+'章　'+note.title+'</div>' +
+        '<div class="chronicle-col">' +
+          '<div class="chronicle-col-label">物語の中で</div>' +
+          '<div class="chronicle-col-text">'+note.fiction+'</div>' +
+        '</div>' +
+        '<div class="chronicle-col">' +
+          '<div class="chronicle-col-label">歴史の記録</div>' +
+          '<div class="chronicle-col-text">'+note.history+'</div>' +
+        '</div>' +
+      '</div>';
+  });
+  document.getElementById('chronicle-content').innerHTML = html;
+}
+
+/* ═══════════════════════════════════════
+   SECTION 28: INITIALIZATION
+═══════════════════════════════════════ */
+(function init() {
+  var hasSave = loadGame();
+  if (hasSave) {
+    document.getElementById('btn-continue').style.display = '';
+    if (gs.progress.chronicleUnlocked) {
+      document.getElementById('nav-chronicle').style.display = '';
+    }
+  } else {
+    document.getElementById('btn-continue').style.display = 'none';
+  }
+  document.getElementById('screen-title').classList.add('active');
+})();
+
+</script>
+</body>
+</html>

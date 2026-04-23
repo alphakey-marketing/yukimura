@@ -1,0 +1,15 @@
+run = "python3 -m http.server 8080"
+entrypoint = "index.html"
+hidden = [".git"]
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+run = ["python3", "-m", "http.server", "8080"]
+deploymentTarget = "static"
+publicDir = "."
+
+[[ports]]
+localPort = 8080
+externalPort = 80

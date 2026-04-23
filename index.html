@@ -322,6 +322,27 @@ var SOFT_PITY_RATE           = 50;
 var BASE_FORT_DAMAGE         = 150;
 
 /* ═══════════════════════════════════════
+   DLC STUBS (Phase 3)
+   ── These functions are placeholders for the itch.io payment hooks.
+   ── In Phase 3, replace the bodies with real payment verification.
+   ── Products:
+   ──   scholar_archive  — $2.99 — all historical annotations + chapter replays
+   ──   crimson_edition  — $7.99 — red UI skin + alternate portrait + 2 lore chapters
+   ──   ost_pack         — $1.99 — full OST download
+   ──   koku_small       — $2.99 — 200 Koku
+   ──   koku_large       — $4.99 — 600 Koku + bonus companion skin
+═══════════════════════════════════════ */
+// function unlockDLC(productId) {
+//   // Phase 3: verify payment via itch.io Purchases API, then set flag and saveGame()
+//   // gs.progress.dlcUnlocked[productId] = true;
+//   // saveGame();
+//   // notify('DLC解放：' + productId);
+// }
+// function isDLCUnlocked(productId) {
+//   return gs && gs.progress && gs.progress.dlcUnlocked && !!gs.progress.dlcUnlocked[productId];
+// }
+
+/* ═══════════════════════════════════════
    SECTION 1: DATA — ENEMIES
 ═══════════════════════════════════════ */
 var ENEMIES = {
@@ -331,7 +352,7 @@ var ENEMIES = {
   ch4_rival:{key:'ch4_rival',name:'豊臣家の競合者',maxHp:110,atk:22,def:14,spd:14,exp:160,mon:65,koku:8},
   ch5_ueda_wave:{key:'ch5_ueda_wave',name:'徳川の先鋒隊',maxHp:90,atk:25,def:16,spd:14,expPerWave:80,expBonus:120,mon:40,koku:5,waves:3},
   ch6_sekigahara:{key:'ch6_sekigahara',name:'東軍の将',maxHp:160,atk:32,def:22,spd:16,exp:300,mon:120,koku:15},
-  ch7_bandit:{key:'ch7_bandit',name:'山の野盗',maxHp:140,atk:28,def:18,spd:15,exp:180,mon:50,koku:5},
+  ch7_bandit:{key:'ch7_bandit',name:'山の野盗',maxHp:140,atk:28,def:18,spd:15,exp:80,mon:20,koku:2},
   ch8_checkpoint:{key:'ch8_checkpoint',name:'徳川の関所番',maxHp:200,atk:38,def:28,spd:18,exp:350,mon:160,koku:20},
   ch9_fort:{key:'ch9_fort',name:'徳川の突撃隊長',maxHp:280,atk:48,def:35,spd:20,exp:450,mon:180,koku:30},
   ch10_final_wave:{key:'ch10_final_wave',name:'徳川の精鋭',maxHp:150,atk:55,def:40,spd:22,expPerWave:200,expBonus:300,mon:100,koku:15,waves:5}
@@ -389,8 +410,10 @@ var COMPANION_DATA = {
   tadasu:{id:'tadasu',name:'渡辺糺',shortName:'糺',cls:'Ninja',rarity:2,atk:16,def:12,spd:24,passive:null,assistDmg:5}
 };
 var GACHA_POOL = [
+  // ★5 — masamune appears twice (2:1 weight vs mitsunari; mitsunari is the story antagonist, rarer)
+  {id:'masamune',rarity:5},{id:'masamune',rarity:5},{id:'mitsunari',rarity:5},
+  // ★4
   {id:'nobuyuki',rarity:4},{id:'nobuyuki',rarity:4},{id:'nobuyuki',rarity:4},
-  {id:'masamune',rarity:5},{id:'mitsunari',rarity:5},
   {id:'yoshitsugu',rarity:4},{id:'yoshitsugu',rarity:4},{id:'yoshitsugu',rarity:4},
   {id:'matabei',rarity:3},{id:'matabei',rarity:3},{id:'matabei',rarity:3},{id:'matabei',rarity:3},{id:'matabei',rarity:3},
   {id:'teruzumi',rarity:3},{id:'teruzumi',rarity:3},{id:'teruzumi',rarity:3},{id:'teruzumi',rarity:3},{id:'teruzumi',rarity:3},
@@ -464,7 +487,7 @@ var CHAPTERS = [
     {text:'米も金も少なかった。\n信繁は毎日、庭で鎧を磨いた。\nいつか、また着る日のために。'},
     {speaker:'真田信繁',text:'「…まだ、使える」'}
    ],
-   postBattle:{text:'野盗を退けた。\n\n村人が礼を言った。信繁は首を振った。\n\n「流人を助けてくれた村だ。\nこれくらいは、させてくれ」\n\n夜の山に、虫の声が響いた。'},
+   postBattle:{text:'野盗を退けた。\n\n褒美はなかった。礼の言葉だけだった。\n\n——それが、九度山の暮らしだった。\n\n米は足りなかった。金もなかった。\n戦場の名将が、山の中で年を重ねた。\n\nこうして十三年が過ぎた。\n\n信繁は鎧を磨き続けた。\nいつか、また戦える日のために。'},
    unlockCompanion:null},
 
   {id:8,title:'大坂への帰還',book:'III',bookTitle:'書の三・最後の赤備え',age:49,year:1614,enemyKey:'ch8_checkpoint',
@@ -536,7 +559,10 @@ var HISTORICAL_NOTES = [
 ═══════════════════════════════════════ */
 var DEFAULT_STATE = {
   player:{name:'真田信繁',level:1,exp:0,expToNext:150,maxHp:120,hp:120,atk:18,def:12,spd:12,mon:100,koku:30,weapon:null,armor:null,accessory:null,inventory:[]},
-  progress:{currentChapter:1,completedChapters:[],storyBeat:0,endingUnlocked:false,chronicleUnlocked:false},
+  progress:{currentChapter:1,completedChapters:[],storyBeat:0,endingUnlocked:false,chronicleUnlocked:false,
+    /* DLC flags — set to true when payment is confirmed (Phase 3) */
+    dlcUnlocked:{scholarArchive:false,crimsonEdition:false,ostPack:false}
+  },
   companions:{owned:[],party:[]},
   gacha:{pullCount:0,pityStar5:0},
   combat:null
@@ -1216,7 +1242,7 @@ function renderFort() {
         renderFortLine('front','前線（最大2名）',fts.front) +
         renderFortLine('reserve','後備（最大1名）',fts.reserve) +
         '<div class="divider"></div>' +
-        '<div class="section-label">兵効果：忍者＠側面=防御+20%　侍＠前線=攻撃+20%　弓/巫女＠後備=砦HP回復</div>' +
+        '<div class="section-label">兵効果：忍者＠側面=受けるダメージ−20%（1人以上で効果）　侍＠前線=攻撃+20%　弓/巫女＠後備=砦HP回復</div>' +
         '<div class="divider"></div>' +
         '<button class="btn-primary" onclick="beginFortAssault()">出陣！　徳川軍を迎え撃て</button>' +
       '</div>' +
@@ -1318,12 +1344,12 @@ function processFortWave() {
   var log = fts.waveLog;
   log.push('━━ 第'+fts.currentWave+'波 ━━');
 
-  // Fort takes 150 damage
-  var dmg = 150;
-  // Ninja on Flank: -10% per ninja
-  fts.flank.forEach(function(id){
-    if (id && COMPANION_DATA[id] && COMPANION_DATA[id].cls==='Ninja') dmg = Math.floor(dmg * 0.8);
-  });
+  // Fort takes BASE_FORT_DAMAGE; capped at one ninja reduction (first ninja on Flank grants −20%)
+  var dmg = BASE_FORT_DAMAGE;
+  var ninjaOnFlank = fts.flank.filter(function(id){
+    return id && COMPANION_DATA[id] && COMPANION_DATA[id].cls === 'Ninja';
+  }).length;
+  if (ninjaOnFlank > 0) dmg = Math.floor(dmg * 0.8); // flat −20% regardless of count
   // Samurai on Front: no fort dmg effect but boosts player atk for this fight (handled in battle)
   fts.fortHp = Math.max(0, fts.fortHp - dmg);
   log.push('砦が'+dmg+'のダメージを受けた（残HP：'+fts.fortHp+'）');
